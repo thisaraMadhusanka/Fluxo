@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ChevronDown, Briefcase, Plus, Check, Settings, Lock } from 'lucide-react';
+import { ChevronDown, Briefcase, Plus, Check, Settings, Lock, LogIn } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setCurrentWorkspace } from '../store/slices/workspaceSlice';
+import { setCurrentWorkspace, joinWorkspace } from '../store/slices/workspaceSlice';
 import CreateWorkspaceModal from './CreateWorkspaceModal';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,8 @@ const WorkspaceSwitcher = () => {
     const { workspaces, currentWorkspace } = useSelector((state) => state.workspaces);
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [inviteCode, setInviteCode] = useState('');
+    const [joining, setJoining] = useState(false);
     const dropdownRef = useRef(null);
 
     // Close dropdown when clicking outside
@@ -30,6 +32,22 @@ const WorkspaceSwitcher = () => {
         setIsOpen(false);
         // Navigate to dashboard to trigger data refetch for new workspace
         navigate('/');
+    };
+
+    const handleJoinWorkspace = async (e) => {
+        e.preventDefault();
+        if (!inviteCode.trim()) return;
+
+        setJoining(true);
+        try {
+            await dispatch(joinWorkspace(inviteCode.trim())).unwrap();
+            setInviteCode('');
+            setIsOpen(false);
+        } catch (error) {
+            // Error handled by toast in slice
+        } finally {
+            setJoining(false);
+        }
     };
 
     if (!currentWorkspace) {
@@ -124,7 +142,7 @@ const WorkspaceSwitcher = () => {
 
                     <div className="my-1 border-t border-gray-100" />
 
-                    <div className="px-2">
+                    <div className="px-2 space-y-2">
                         <button
                             onClick={() => {
                                 setIsModalOpen(true);
@@ -135,16 +153,28 @@ const WorkspaceSwitcher = () => {
                             <Plus size={16} className="mr-2" />
                             New Workspace
                         </button>
-                        <button
-                            onClick={() => {
-                                navigate('/settings/workspace');
-                                setIsOpen(false);
-                            }}
-                            className="w-full flex items-center px-2 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
-                        >
-                            <Settings size={16} className="mr-2" />
-                            Workspace Settings
-                        </button>
+
+                        <form onSubmit={handleJoinWorkspace} className="pt-2 border-t border-gray-100">
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 mb-2">Join Workspace</label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={inviteCode}
+                                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                                    placeholder="Enter Code"
+                                    maxLength={8}
+                                    className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase font-mono"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={joining || !inviteCode.trim()}
+                                    className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Join Workspace"
+                                >
+                                    <LogIn size={16} />
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

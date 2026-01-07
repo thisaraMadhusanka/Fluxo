@@ -179,7 +179,7 @@ exports.getMyWorkspaces = async (req, res) => {
             if (!m.workspace) return null;
             return {
                 ...m.workspace.toObject(),
-                userRole: m.role,
+                role: m.role, // Attach role directly for easy access
                 joinedAt: m.joinedAt
             };
         }).filter(w => w !== null);
@@ -195,11 +195,16 @@ exports.getMyWorkspaces = async (req, res) => {
             if (!workspaceIds.has(w._id.toString())) {
                 allWorkspaces.push({
                     ...w.toObject(),
-                    userRole: null,
                     role: { name: 'Owner' },
                     joinedAt: w.createdAt
                 });
                 workspaceIds.add(w._id.toString());
+            } else {
+                // If workspace already exists in memberWorkspaces, update its role to Owner
+                const existingIndex = allWorkspaces.findIndex(ws => ws._id.toString() === w._id.toString());
+                if (existingIndex !== -1) {
+                    allWorkspaces[existingIndex].role = { name: 'Owner' };
+                }
             }
         });
 

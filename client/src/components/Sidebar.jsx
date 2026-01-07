@@ -14,6 +14,7 @@ const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { name: 'Projects', icon: FolderKanban, path: '/projects' },
     { name: 'Tasks', icon: CheckSquare, path: '/tasks' },
+    { name: 'Workspace', icon: Settings, path: '/settings/workspace' },
 ];
 
 const Sidebar = () => {
