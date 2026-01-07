@@ -73,50 +73,72 @@ const getInvitationEmailTemplate = (userEmail, workspaceName, inviterName, accep
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>You've been invited to Fluxo</title>
         <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #1F1F1F; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #0F0F0F; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; }
-            .button { display: inline-block; padding: 15px 30px; background: #F26B3A; color: #ffffff !important; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: bold; }
-            .button:hover { background: #d95a2b; }
-            .footer { text-align: center; padding: 20px; color: #7A7A7A; font-size: 12px; }
-            .info-box { background: #F4ECE4; border-left: 4px solid #F26B3A; padding: 15px; margin: 20px 0; }
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+            body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 0; }
+            .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 0; }
+            .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); overflow: hidden; border: 1px solid #e2e8f0; }
+            .header { background: #ffffff; padding: 32px; text-align: center; border-bottom: 1px solid #f1f5f9; }
+            .logo { font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -1px; text-decoration: none; }
+            .logo span { color: #f97316; }
+            .hero { padding: 40px 32px; text-align: center; background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%); }
+            .content { padding: 0 32px 32px 32px; }
+            .avatar-group { margin-bottom: 24px; }
+            .avatar { width: 64px; height: 64px; border-radius: 50%; background: #f97316; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; border: 4px solid white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2); }
+            h2 { margin: 0 0 16px 0; color: #0f172a; font-size: 24px; letter-spacing: -0.5px; }
+            p { margin: 0 0 24px 0; color: #475569; font-size: 16px; }
+            .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 32px; }
+            .card-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+            .card-row:last-child { margin-bottom: 0; }
+            .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; }
+            .value { font-size: 14px; color: #0f172a; font-weight: 600; }
+            .btn { display: inline-block; background: #f97316; color: white !important; font-weight: 600; padding: 16px 32px; border-radius: 100px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.4); transition: all 0.2s; }
+            .btn:hover { background: #ea580c; transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(249, 115, 22, 0.5); }
+            .footer { background: #f8fafc; padding: 24px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+            .link { color: #f97316; text-decoration: none; font-weight: 500; }
         </style>
     </head>
     <body>
-        <div class="container">
-            <div class="header">
-                <h1>🎯 Fluxo</h1>
-                <p>You've been invited to collaborate!</p>
-            </div>
-            <div class="content">
-                <h2>Hi there!</h2>
-                <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on Fluxo.</p>
-                
-                <div class="info-box">
-                    <p><strong>📧 Invitation Email:</strong> ${userEmail}</p>
-                    <p><strong>📁 Workspace:</strong> ${workspaceName}</p>
+        <div class="wrapper">
+            <div class="container">
+                <div class="header">
+                    <a href="#" class="logo">Flux<span>o.</span></a>
                 </div>
-
-                <p>To accept this invitation and join the team:</p>
-                <ol>
-                    <li>Click the button below</li>
-                    <li>Sign in with your Google account (${userEmail})</li>
-                    <li>Start collaborating!</li>
-                </ol>
-
-                <center>
-                    <a href="${acceptUrl}" class="button">Accept Invitation</a>
-                </center>
-
-                <p style="color: #666; font-size: 14px; margin-top: 20px;">
-                    <strong>Note:</strong> This invitation link will expire in 7 days. If you didn't expect this invitation, you can safely ignore this email.
-                </p>
-            </div>
-            <div class="footer">
-                <p>© 2026 Fluxo - Project Management Made Simple</p>
-                <p>This is an automated email. Please do not reply.</p>
+                <div class="hero">
+                    <div class="avatar-group">
+                        <div class="avatar">${inviterName.charAt(0).toUpperCase()}</div>
+                    </div>
+                    <h2>Invitation to Collaborate</h2>
+                    <p><strong>${inviterName}</strong> has invited you to join the workspace <strong>${workspaceName}</strong>.</p>
+                </div>
+                <div class="content">
+                    <div class="card">
+                        <div class="card-row">
+                            <span class="label">Workspace</span>
+                            <span class="value">${workspaceName}</span>
+                        </div>
+                        <div class="card-row">
+                            <span class="label">Role</span>
+                            <span class="value">Member</span>
+                        </div>
+                        <div class="card-row">
+                            <span class="label">Invited by</span>
+                            <span class="value">${inviterName}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <a href="${acceptUrl}" class="btn">Join Workspace</a>
+                    </div>
+                    
+                    <p style="text-align: center; font-size: 14px; color: #64748b;">
+                        This invite link will expire in 7 days. If you weren't expecting this, you can safely ignore this email.
+                    </p>
+                </div>
+                <div class="footer">
+                    <p>© 2026 Fluxo Inc. Project Management Made Simple.</p>
+                </div>
             </div>
         </div>
     </body>
@@ -134,46 +156,80 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
         console.log(`📧 Sending approval email to ${userEmail}`);
         console.log(`🔗 Login URL: ${loginUrl}`);
 
-        const subject = '🎉 Your Fluxo Account is Approved!';
+        const subject = '🎉 You\'re in! Your Fluxo account is checked and approved';
         const html = `
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Approved</title>
         <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; padding: 40px 0; }
-            .logo { font-size: 28px; font-weight: 900; color: #1a1d23; letter-spacing: -1px; }
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+            body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 0; }
+            .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 0; }
+            .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; }
+            .header { background: #ffffff; padding: 32px; text-align: center; border-bottom: 1px solid #f1f5f9; }
+            .logo { font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -1px; text-decoration: none; }
             .logo span { color: #f97316; }
-            .card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #f3f4f6; }
-            .btn { display: inline-block; background: #f97316; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; margin-top: 24px; }
-            .btn:hover { background: #ea580c; }
-            .footer { text-align: center; margin-top: 40px; color: #9ca3af; font-size: 14px; }
+            .hero { padding: 48px 32px 24px; text-align: center; }
+            .success-icon { width: 80px; height: 80px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.1); }
+            h1 { margin: 0 0 16px 0; color: #0f172a; font-size: 30px; letter-spacing: -1px; line-height: 1.2; }
+            p { margin: 0 0 24px 0; color: #475569; font-size: 17px; max-width: 460px; margin-left: auto; margin-right: auto; }
+            .content { padding: 0 40px 40px; text-align: center; }
+            .btn { display: inline-block; background: #f97316; color: white !important; font-weight: 600; padding: 18px 48px; border-radius: 12px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3); transition: all 0.2s; width: 100%; box-sizing: border-box; text-align: center; }
+            .btn:hover { background: #ea580c; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4); }
+            .divider { height: 1px; background: #e2e8f0; margin: 32px 0; }
+            .next-steps { text-align: left; background: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; }
+            .step { display: flex; align-items: self-start; margin-bottom: 16px; }
+            .step:last-child { margin-bottom: 0; }
+            .step-icon { min-width: 24px; height: 24px; background: #e0f2fe; color: #0284c7; border-radius: 50%; padding: 4px; margin-right: 12px; margin-top: 2px; }
+            .step-content h4 { margin: 0 0 4px 0; font-size: 15px; color: #0f172a; }
+            .step-content p { font-size: 14px; margin: 0; text-align: left; }
+            .footer { background: #f8fafc; padding: 24px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
         </style>
     </head>
     <body>
-        <div class="container">
-            <div class="header">
-                <div class="logo">Flux<span>o.</span></div>
-            </div>
-            <div class="card">
-                <h2 style="margin-top: 0; color: #111827; font-size: 24px;">You're in! 🚀</h2>
-                <p style="font-size: 16px; color: #4b5563;">Hi ${userName},</p>
-                <p style="font-size: 16px; color: #4b5563;">
-                    Great news! Your account has been approved by the admin. You can now access your workspace and start managing your projects properly.
-                </p>
-                <center>
-                    <a href="${loginUrl}" class="btn">Log In to Fluxo</a>
-                </center>
-                <p style="margin-top: 32px; font-size: 14px; color: #6b7280; text-align: center;">
-                    Or copy this link: <br>
-                    <a href="${loginUrl}" style="color: #f97316;">${loginUrl}</a>
-                </p>
-            </div>
-            <div class="footer">
-                <p>© 2026 Fluxo. All rights reserved.</p>
+        <div class="wrapper">
+            <div class="container">
+                <div class="header">
+                    <a href="#" class="logo">Flux<span>o.</span></a>
+                </div>
+                <div class="hero">
+                    <div class="success-icon">🚀</div>
+                    <h1>You're Ready to Launch!</h1>
+                    <p>Hi ${userName},<br>Your account has been officially approved by our admins. You now have full access to Fluxo workspace.</p>
+                </div>
+                <div class="content">
+                    <a href="${loginUrl}" class="btn">Login to Dashboard</a>
+                    
+                    <div class="divider"></div>
+                    
+                    <div class="next-steps">
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>✅ Complete Setup</h4>
+                                <p>Update your profile with a photo and bio.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>📊 Create Projects</h4>
+                                <p>Start organizing your tasks and timeline.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-content">
+                                <h4>👥 Invite Team</h4>
+                                <p>Add members to your workspace to collaborate.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>Questions? Just reply to this email.</p>
+                    <p>© 2026 Fluxo Inc. All rights reserved.</p>
+                </div>
             </div>
         </div>
     </body>
