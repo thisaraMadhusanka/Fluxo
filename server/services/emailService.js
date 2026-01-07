@@ -7,7 +7,7 @@ const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || 'CzO1CtVscsgKy6YGK'
 const EMAILJS_PRIVATE_KEY = process.env.EMAILJS_PRIVATE_KEY; // Add this to .env
 
 // Send email via EmailJS
-const sendViaEmailJS = async (to, fromName, subject, htmlBody) => {
+const sendViaEmailJS = async (to, fromName, subject, htmlBody, templateId = null) => {
     console.log('\n=== EMAIL SERVICE (EmailJS) ===');
     console.log('Service ID:', EMAILJS_SERVICE_ID || 'MISSING');
     console.log('Public Key:', EMAILJS_PUBLIC_KEY ? 'SET' : 'MISSING');
@@ -33,7 +33,7 @@ const sendViaEmailJS = async (to, fromName, subject, htmlBody) => {
 
         const response = await emailjs.send(
             EMAILJS_SERVICE_ID,
-            process.env.EMAILJS_TEMPLATE_ID || 'template_default',
+            templateId || process.env.EMAILJS_TEMPLATE_ID || 'template_default',
             templateParams,
             {
                 publicKey: EMAILJS_PUBLIC_KEY,
@@ -236,7 +236,7 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
     </html>
         `;
 
-        const result = await sendViaEmailJS(userEmail, 'Fluxo Team', subject, html);
+        const result = await sendViaEmailJS(userEmail, 'Fluxo Team', subject, html, 'template_ofn5imf');
         console.log('✅ Approval email sent successfully');
         return result;
     } catch (error) {
