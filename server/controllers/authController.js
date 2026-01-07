@@ -207,8 +207,12 @@ exports.googleAuth = async (req, res) => {
             token,
         });
     } catch (error) {
-        console.error(error);
-        res.status(400).json({ message: 'Google Auth Failed' });
+        console.error('Google Auth Error Details:', error.message);
+        if (error.response) {
+            console.error('Google API Error:', error.response.data);
+        }
+        console.error('Full Error Object:', error);
+        res.status(400).json({ message: 'Google Auth Failed', error: error.message });
     }
 };
 

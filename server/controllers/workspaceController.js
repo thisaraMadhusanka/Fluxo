@@ -304,6 +304,31 @@ exports.joinWorkspace = async (req, res) => {
         workspace.members.push(newMember._id);
         await workspace.save();
 
+        // Create notifications for both inviter and joined user
+        const { createNotification } = require('./notificationController');
+
+        // Notify the user who joined
+        createNotification({
+            userId: req.user.id,
+            type: 'success',
+            title: 'Joined Workspace',
+            message: `You have successfully joined "${workspace.name}"`,
+            link: `/workspace/${workspace._id}`,
+            metadata: { workspaceId: workspace._id }
+        });
+
+        // Notify the workspace owner
+        if (workspace.owner && workspace.owner.toString() !== req.user.id.toString()) {
+            createNotification({
+                userId: workspace.owner,
+                type: 'system',
+                title: 'New Member Joined',
+                message: `${req.user.name} joined your workspace "${workspace.name}"`,
+                link: `/settings/workspace`,
+                metadata: { workspaceId: workspace._id, newMemberId: req.user.id }
+            });
+        }
+
         res.status(200).json({ message: 'Joined workspace successfully', workspace });
     } catch (error) {
         console.error(error);

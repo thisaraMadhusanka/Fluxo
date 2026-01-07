@@ -3,6 +3,7 @@ import { ChevronDown, Briefcase, Plus, Check, Settings, Lock, LogIn } from 'luci
 import { useSelector, useDispatch } from 'react-redux';
 import { setCurrentWorkspace, joinWorkspace } from '../store/slices/workspaceSlice';
 import CreateWorkspaceModal from './CreateWorkspaceModal';
+import JoinWorkspaceModal from './JoinWorkspaceModal';
 import { useNavigate } from 'react-router-dom';
 
 const WorkspaceSwitcher = () => {
@@ -11,8 +12,7 @@ const WorkspaceSwitcher = () => {
     const { workspaces, currentWorkspace } = useSelector((state) => state.workspaces);
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [inviteCode, setInviteCode] = useState('');
-    const [joining, setJoining] = useState(false);
+    const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
     const dropdownRef = useRef(null);
 
     // Close dropdown when clicking outside
@@ -154,32 +154,22 @@ const WorkspaceSwitcher = () => {
                             New Workspace
                         </button>
 
-                        <form onSubmit={handleJoinWorkspace} className="pt-2 border-t border-gray-100">
-                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 mb-2">Join Workspace</label>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={inviteCode}
-                                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                                    placeholder="Enter Code"
-                                    maxLength={8}
-                                    className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary uppercase font-mono"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={joining || !inviteCode.trim()}
-                                    className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Join Workspace"
-                                >
-                                    <LogIn size={16} />
-                                </button>
-                            </div>
-                        </form>
+                        <button
+                            onClick={() => {
+                                setIsJoinModalOpen(true);
+                                setIsOpen(false);
+                            }}
+                            className="w-full flex items-center px-2 py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                            <LogIn size={16} className="mr-2" />
+                            Join Workspace
+                        </button>
                     </div>
                 </div>
             )}
 
             <CreateWorkspaceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            <JoinWorkspaceModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
         </div>
     );
 };
