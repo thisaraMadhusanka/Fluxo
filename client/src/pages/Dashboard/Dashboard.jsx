@@ -33,6 +33,11 @@ const Dashboard = () => {
             setStats(data);
         } catch (error) {
             console.error("Failed to fetch dashboard stats", error);
+            if (error.response && error.response.status === 403) {
+                // If forbidden, it implies access lost to this workspace. 
+                // We could trigger a workspace refresh or deselect it, but for now just log it.
+                // Ideally we dispatch an action to clear invalid workspace if needed.
+            }
         } finally {
             setStatsLoading(false);
         }
@@ -109,7 +114,7 @@ const Dashboard = () => {
                     <div className="h-[320px] w-full">
                         {stats?.weeklyActivity ? (
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats.weeklyActivity}>
+                                <BarChart data={stats?.weeklyActivity || []}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} />
                                     <YAxis axisLine={false} tickLine={false} />

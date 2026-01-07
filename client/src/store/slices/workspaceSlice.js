@@ -134,11 +134,13 @@ const workspaceSlice = createSlice({
 
             // If deleted workspace was active, switch to another
             if (state.currentWorkspace?._id === action.payload) {
-                // Prefer "My Workspace" if it exists, otherwise first available
-                const myWorkspace = state.workspaces.find(w => w.name === 'My Workspace') || state.workspaces[0] || null;
-                state.currentWorkspace = myWorkspace;
-                if (myWorkspace) {
-                    localStorage.setItem('currentWorkspace', JSON.stringify(myWorkspace));
+                // Prefer private workspace first, then any other available
+                const privateWorkspace = state.workspaces.find(w => w.isPrivate);
+                const nextWorkspace = privateWorkspace || state.workspaces[0] || null;
+
+                state.currentWorkspace = nextWorkspace;
+                if (nextWorkspace) {
+                    localStorage.setItem('currentWorkspace', JSON.stringify(nextWorkspace));
                 } else {
                     localStorage.removeItem('currentWorkspace');
                 }

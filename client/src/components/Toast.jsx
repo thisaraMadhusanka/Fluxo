@@ -18,7 +18,11 @@ export const ToastProvider = ({ children }) => {
 
     const addToast = (message, type = 'info', duration = 3000) => {
         const id = Date.now();
-        setToasts(prev => [...prev, { id, message, type }]);
+        // Convert message to string to handle Error objects and other non-string types
+        const messageStr = typeof message === 'string' ? message :
+            message instanceof Error ? message.message :
+                String(message);
+        setToasts(prev => [...prev, { id, message: messageStr, type }]);
 
         // Play sound - Disabled due to browser autoplay policies
         // Browser security prevents auto-playing audio without user interaction

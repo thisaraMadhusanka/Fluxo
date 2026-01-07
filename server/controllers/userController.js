@@ -204,16 +204,26 @@ const getUserStats = async (req, res) => {
         const Project = require('../models/Project');
         const Task = require('../models/Task');
         const Workspace = require('../models/Workspace');
+        const Member = require('../models/Member');
 
         // Get projects user is a member of
         const joinedProjects = await Project.find({
             "members.user": req.user.id
         }).populate('workspace', 'name');
 
-        // Get workspaces user is a member of
-        const joinedWorkspaces = await Workspace.find({
-            "members.user": req.user.id
-        });
+        // Get workspaces from Member collection (proper way)
+        const memberRecords = await Member.find({ user: req.user.id })
+            .populate('workspace', 'name owner isPrivate')
+            .populate('role', 'name');
+
+        const joinedWorkspaces = memberRecords
+            .filter(m => m.workspace) // Ensure workspace exists
+            .map(m => ({
+                _id: m.workspace._id,
+                name: m.workspace.name,
+                isPrivate: m.workspace.isPrivate,
+                role: m.role?.name || 'Member'
+            }));
 
         // Calculate stats
         const completedProjects = joinedProjects.filter(p => p.status === 'Completed').length;
@@ -245,15 +255,11 @@ const getUserStats = async (req, res) => {
                 workspaceName: p.workspace?.name,
                 color: p.color
             })),
-            joinedWorkspaces: joinedWorkspaces.map(w => ({
-                _id: w._id,
-                name: w.name,
-                role: w.members.find(m => m.user.toString() === req.user.id.toString())?.role
-            }))
+            joinedWorkspaces
         });
     } catch (error) {
         console.error('Get Stats Error:', error);
-        res.status(500).json({ message: 'Server Error fetching stats' });
+        res.status(500).json({ message: 'Server Error fetching stats', error: error.message });
     }
 };
 
@@ -267,13 +273,14 @@ const leaveProject = async (req, res) => {
 
         if (!project) return res.status(404).json({ message: 'Project not found' });
 
-        // Remove user from members
+        // Remove user from embedded members array
         project.members = project.members.filter(m => m.user.toString() !== req.user.id.toString());
         await project.save();
 
         res.json({ message: 'Left project successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Server Error leaving project' });
+        console.error('Leave Project Error:', error);
+        res.status(500).json({ message: 'Server Error leaving project', error: error.message });
     }
 };
 
@@ -283,23 +290,39 @@ const leaveProject = async (req, res) => {
 const leaveWorkspace = async (req, res) => {
     try {
         const Workspace = require('../models/Workspace');
-        const workspace = await Workspace.findById(req.params.id);
+        const Member = require('../models/Member');
+
+        const workspaceId = req.params.id;
+        const workspace = await Workspace.findById(workspaceId);
 
         if (!workspace) return res.status(404).json({ message: 'Workspace not found' });
 
-        // Owners cannot leave their own workspace normally, they must delete it or transfer it
-        const userMember = workspace.members.find(m => m.user.toString() === req.user.id.toString());
-        if (userMember?.role === 'Owner') {
+        // Check if user is actually a member via Member collection
+        const member = await Member.findOne({
+            user: req.user.id,
+            workspace: workspaceId
+        }).populate('role');
+
+        if (!member) {
+            return res.status(404).json({ message: 'You are not a member of this workspace' });
+        }
+
+        // Owners cannot leave their own workspace
+        if (member.role?.name === 'Owner' || workspace.owner?.toString() === req.user.id.toString()) {
             return res.status(400).json({ message: 'Owner cannot leave their own workspace. Delete the workspace instead.' });
         }
 
-        // Remove user from members
-        workspace.members = workspace.members.filter(m => m.user.toString() !== req.user.id.toString());
+        // Delete from Member collection
+        await Member.deleteOne({ _id: member._id });
+
+        // Also remove from workspace members array
+        workspace.members = workspace.members.filter(m => m._id?.toString() !== member._id.toString());
         await workspace.save();
 
         res.json({ message: 'Left workspace successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Server Error leaving workspace' });
+        console.error('Leave Workspace Error:', error);
+        res.status(500).json({ message: 'Server Error leaving workspace', error: error.message });
     }
 };
 

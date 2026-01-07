@@ -6,7 +6,7 @@ import { Users, UserPlus, Trash2, Copy, Check, Mail, AlertTriangle, Lock, Settin
 import ConfirmModal from '@/components/ConfirmModal';
 import api from '@/services/api';
 import { useToast } from '@/components/Toast';
-import { fetchWorkspaces, inviteMember } from '@/store/slices/workspaceSlice';
+import { fetchWorkspaces, inviteMember, deleteWorkspace } from '@/store/slices/workspaceSlice';
 
 const WorkspaceSettings = () => {
     const dispatch = useDispatch();
