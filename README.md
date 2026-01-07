@@ -92,4 +92,4 @@ MIT License
 
 ## Author
 
-Built with ❤️ by your team
+Built with ❤️ by Thisara Madhusanka
