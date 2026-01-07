@@ -1,67 +1,71 @@
-const axios = require('axios');
+const emailjs = require('@emailjs/nodejs');
 
-// Send email via Google Apps Script
-const sendViaGAS = async (to, subject, htmlBody) => {
-    const gasUrl = process.env.GAS_EMAIL_URL;
-    const gasSecret = process.env.GAS_API_SECRET;
+// Initialize EmailJS with your credentials
+// Using the same credentials as frontend for consistency
+const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || 'service_2xvzpo8';
+const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || 'CzO1CtVscsgKy6YGK';
+const EMAILJS_PRIVATE_KEY = process.env.EMAILJS_PRIVATE_KEY; // Add this to .env
 
-    console.log('\n=== EMAIL SERVICE DEBUG ===');
-    console.log('GAS_EMAIL_URL:', gasUrl || 'MISSING');
-    console.log('GAS_API_SECRET:', gasSecret ? 'SET' : 'MISSING');
+// Send email via EmailJS
+const sendViaEmailJS = async (to, fromName, subject, htmlBody) => {
+    console.log('\n=== EMAIL SERVICE (EmailJS) ===');
+    console.log('Service ID:', EMAILJS_SERVICE_ID || 'MISSING');
+    console.log('Public Key:', EMAILJS_PUBLIC_KEY ? 'SET' : 'MISSING');
     console.log('Recipient:', to);
     console.log('Subject:', subject);
 
-    if (!gasUrl) {
-        console.error('❌ ERROR: GAS_EMAIL_URL not configured in .env');
-        throw new Error('GAS_EMAIL_URL is required');
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_PUBLIC_KEY || !EMAILJS_PRIVATE_KEY) {
+        console.error('❌ ERROR: EmailJS credentials not configured in .env');
+        throw new Error('EmailJS credentials are required');
     }
 
     try {
-        console.log('📤 Sending request to GAS...');
-        const response = await axios.post(gasUrl, {
-            secret: gasSecret,
-            to: to,
+        console.log('📤 Sending email via EmailJS...');
+
+        // EmailJS template parameters
+        const templateParams = {
+            to_email: to,
+            from_name: fromName || 'Fluxo',
             subject: subject,
-            htmlBody: htmlBody
-        }, {
-            timeout: 10000 // 10 second timeout
-        });
+            message_html: htmlBody,
+            reply_to: 'noreply@fluxo.app'
+        };
 
-        console.log('📥 GAS Response Status:', response.status);
-        console.log('📥 GAS Response Data:', JSON.stringify(response.data, null, 2));
+        const response = await emailjs.send(
+            EMAILJS_SERVICE_ID,
+            process.env.EMAILJS_TEMPLATE_ID || 'template_default',
+            templateParams,
+            {
+                publicKey: EMAILJS_PUBLIC_KEY,
+                privateKey: EMAILJS_PRIVATE_KEY,
+            }
+        );
 
-        if (response.data && response.data.success) {
-            console.log('✅ Email sent successfully via GAS');
-            return { success: true, messageId: 'GAS-' + Date.now() };
-        } else {
-            console.error('❌ GAS returned failure:', response.data);
-            throw new Error(response.data?.error || 'GAS returned success=false');
-        }
+        console.log('✅ Email sent successfully via EmailJS');
+        console.log('Response:', response);
+        return { success: true, messageId: response.text };
     } catch (error) {
-        console.error('❌ GAS Request Failed:');
+        console.error('❌ EmailJS Request Failed:');
         console.error('   Error:', error.message);
-        if (error.response) {
-            console.error('   HTTP Status:', error.response.status);
-            console.error('   Response:', error.response.data);
-        }
+        console.error('   Full Error:', error);
         throw error;
     }
 };
 
-// Main function: Send invitation email
+// Send invitation email
 exports.sendInvitationEmail = async (userEmail, workspaceName, inviterName, acceptUrl) => {
     try {
         const subject = `You're invited to join ${workspaceName}`;
         const html = getInvitationEmailTemplate(userEmail, workspaceName, inviterName, acceptUrl);
 
-        return await sendViaGAS(userEmail, subject, html);
+        return await sendViaEmailJS(userEmail, 'Fluxo Team', subject, html);
     } catch (error) {
         console.error('💥 sendInvitationEmail failed:', error.message);
         throw error;
     }
 };
 
-// Email template
+// Email template for invitations
 const getInvitationEmailTemplate = (userEmail, workspaceName, inviterName, acceptUrl) => {
     return `
     <!DOCTYPE html>
@@ -120,16 +124,16 @@ const getInvitationEmailTemplate = (userEmail, workspaceName, inviterName, accep
     `;
 };
 
-// Send approval email
+// Send approval notification email
 exports.sendApprovalNotification = async (userEmail, userName) => {
     try {
-        const loginUrl = process.env.CLIENT_URL 
-            ? `${process.env.CLIENT_URL}/login` 
+        const loginUrl = process.env.CLIENT_URL
+            ? `${process.env.CLIENT_URL}/login`
             : 'https://fluxo-xi.vercel.app/login';
-            
+
         console.log(`📧 Sending approval email to ${userEmail}`);
         console.log(`🔗 Login URL: ${loginUrl}`);
-        
+
         const subject = '🎉 Your Fluxo Account is Approved!';
         const html = `
     <!DOCTYPE html>
@@ -176,13 +180,48 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
     </html>
         `;
 
-        const result = await sendViaGAS(userEmail, subject, html);
+        const result = await sendViaEmailJS(userEmail, 'Fluxo Team', subject, html);
         console.log('✅ Approval email sent successfully');
         return result;
     } catch (error) {
         console.error('💥 sendApprovalNotification failed:', error.message);
         console.error('Full error:', error);
         // Don't throw to prevent blocking the approval process
+    }
+};
+
+// Send registration notification to admin
+exports.sendRegistrationNotification = async (userName, userEmail) => {
+    try {
+        const adminEmail = 'thisarasanka4@gmail.com';
+        const subject = '👤 New User Registration on Fluxo';
+        const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .card { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #f97316; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>New User Awaiting Approval</h2>
+            <div class="card">
+                <p><strong>Name:</strong> ${userName}</p>
+                <p><strong>Email:</strong> ${userEmail}</p>
+            </div>
+            <p>Please log in to your Fluxo admin panel to approve or reject this user.</p>
+        </div>
+    </body>
+    </html>
+        `;
+
+        return await sendViaEmailJS(adminEmail, 'Fluxo System', subject, html);
+    } catch (error) {
+        console.error('💥 sendRegistrationNotification failed:', error.message);
     }
 };
 
