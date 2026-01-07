@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, Check } from 'lucide-react';
 import { login, register, googleLogin } from '@/store/slices/authSlice';
 
 const Login = () => {
@@ -297,6 +297,28 @@ const Login = () => {
                             <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
                             <h3 className="text-xl font-bold text-gray-800">Please Wait...</h3>
                             <p className="text-gray-500">We are verifying your credentials</p>
+                        </motion.div>
+                    )}
+                    {error && error.includes('pending approval') && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="absolute inset-0 bg-white rounded-2xl flex flex-col items-center justify-center z-50 text-center p-8 shadow-xl"
+                        >
+                            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+                                <Check size={40} />
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-2">Thanks for joining!</h3>
+                            <p className="text-gray-600 mb-6 leading-relaxed">
+                                You have been added to the waitlist. <br />
+                                Once the admin approves your account, we will send you an email with a login link.
+                            </p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                            >
+                                Back to Login
+                            </button>
                         </motion.div>
                     )}
                 </AnimatePresence>

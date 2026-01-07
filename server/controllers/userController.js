@@ -167,6 +167,17 @@ const approveUser = async (req, res) => {
         if (user) {
             user.isApproved = true;
             const updatedUser = await user.save();
+
+            // Send approval email with login link
+            const { sendApprovalNotification } = require('../services/emailService');
+            try {
+                await sendApprovalNotification(user.email, user.name);
+                console.log(`✅ Approval email sent to ${user.email}`);
+            } catch (emailError) {
+                console.error('❌ Failed to send approval email:', emailError.message);
+                // Don't fail the approval if email fails
+            }
+
             res.json({ message: 'User approved', user: updatedUser });
         } else {
             res.status(404).json({ message: 'User not found' });

@@ -120,4 +120,61 @@ const getInvitationEmailTemplate = (userEmail, workspaceName, inviterName, accep
     `;
 };
 
+// Send approval email
+exports.sendApprovalNotification = async (userEmail, userName) => {
+    try {
+        const loginUrl = `${process.env.CLIENT_URL}/login`;
+        const subject = '🎉 Your Fluxo Account is Approved!';
+        const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { text-align: center; padding: 40px 0; }
+            .logo { font-size: 28px; font-weight: 900; color: #1a1d23; letter-spacing: -1px; }
+            .logo span { color: #f97316; }
+            .card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #f3f4f6; }
+            .btn { display: inline-block; background: #f97316; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; margin-top: 24px; }
+            .btn:hover { background: #ea580c; }
+            .footer { text-align: center; margin-top: 40px; color: #9ca3af; font-size: 14px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="logo">Flux<span>o.</span></div>
+            </div>
+            <div class="card">
+                <h2 style="margin-top: 0; color: #111827; font-size: 24px;">You're in! 🚀</h2>
+                <p style="font-size: 16px; color: #4b5563;">Hi ${userName},</p>
+                <p style="font-size: 16px; color: #4b5563;">
+                    Great news! Your account has been approved by the admin. You can now access your workspace and start managing your projects properly.
+                </p>
+                <center>
+                    <a href="${loginUrl}" class="btn">Log In to Fluxo</a>
+                </center>
+                <p style="margin-top: 32px; font-size: 14px; color: #6b7280; text-align: center;">
+                    Or copy this link: <br>
+                    <a href="${loginUrl}" style="color: #f97316;">${loginUrl}</a>
+                </p>
+            </div>
+            <div class="footer">
+                <p>© 2026 Fluxo. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+        `;
+
+        return await sendViaGAS(userEmail, subject, html);
+    } catch (error) {
+        console.error('💥 sendApprovalNotification failed:', error.message);
+        // Don't throw to prevent blocking the approval process
+    }
+};
+
 module.exports = exports;
