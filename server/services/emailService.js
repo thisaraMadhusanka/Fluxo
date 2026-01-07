@@ -123,7 +123,13 @@ const getInvitationEmailTemplate = (userEmail, workspaceName, inviterName, accep
 // Send approval email
 exports.sendApprovalNotification = async (userEmail, userName) => {
     try {
-        const loginUrl = `${process.env.CLIENT_URL}/login`;
+        const loginUrl = process.env.CLIENT_URL 
+            ? `${process.env.CLIENT_URL}/login` 
+            : 'https://fluxo-xi.vercel.app/login';
+            
+        console.log(`📧 Sending approval email to ${userEmail}`);
+        console.log(`🔗 Login URL: ${loginUrl}`);
+        
         const subject = '🎉 Your Fluxo Account is Approved!';
         const html = `
     <!DOCTYPE html>
@@ -170,9 +176,12 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
     </html>
         `;
 
-        return await sendViaGAS(userEmail, subject, html);
+        const result = await sendViaGAS(userEmail, subject, html);
+        console.log('✅ Approval email sent successfully');
+        return result;
     } catch (error) {
         console.error('💥 sendApprovalNotification failed:', error.message);
+        console.error('Full error:', error);
         // Don't throw to prevent blocking the approval process
     }
 };

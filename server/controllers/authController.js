@@ -41,6 +41,20 @@ exports.registerUser = async (req, res) => {
             // Send notification to owner
             await sendRegistrationNotification(name, email);
 
+            // Create notification for owner to see in notification panel
+            const { createNotification } = require('./notificationController');
+            const ownerUser = await User.findOne({ email: 'thisarasanka4@gmail.com' });
+            if (ownerUser) {
+                await createNotification({
+                    userId: ownerUser._id,
+                    type: 'info',
+                    title: 'New User Registration',
+                    message: `${name} (${email}) has registered and is waiting for approval`,
+                    link: '/settings/users',
+                    metadata: { userId: user._id, userEmail: email }
+                });
+            }
+            
             // Note: We're not generating a token here because they aren't approved yet.
             // Or we can generate it but they can't use it?
             // Better behavior: Check isApproved in login.
@@ -176,9 +190,23 @@ exports.googleAuth = async (req, res) => {
             });
 
             if (!isOwner) {
-                // Notify owner
+                // Notify owner via email
                 const { sendRegistrationNotification } = require('../services/emailService');
                 await sendRegistrationNotification(name, email);
+                
+                // Create notification for owner in notification panel
+                const { createNotification } = require('./notificationController');
+                const ownerUser = await User.findOne({ email: 'thisarasanka4@gmail.com' });
+                if (ownerUser) {
+                    await createNotification({
+                        userId: ownerUser._id,
+                        type: 'info',
+                        title: 'New User Registration (Google)',
+                        message: `${name} (${email}) has registered via Google and is waiting for approval`,
+                        link: '/settings/users',
+                        metadata: { userId: user._id, userEmail: email }
+                    });
+                }
             }
         } else {
             // User exists - Force update role if it's the owner email (fix for existing users)
