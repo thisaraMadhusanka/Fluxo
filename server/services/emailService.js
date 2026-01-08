@@ -171,6 +171,15 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
             refresh_token: process.env.GMAIL_REFRESH_TOKEN
         });
 
+        // Debug log to verify credentials (without exposing secrets)
+        console.log('📧 Gmail Config Check:', {
+            user: process.env.EMAIL_USER ? 'Set' : 'Missing',
+            clientId: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Missing',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Missing',
+            refreshToken: process.env.GMAIL_REFRESH_TOKEN ? 'Set' : 'Missing',
+            refreshTokenLength: process.env.GMAIL_REFRESH_TOKEN ? process.env.GMAIL_REFRESH_TOKEN.length : 0
+        });
+
         // Create nodemailer transport with Gmail
         const transporter = nodemailer.createTransport({
             service: 'gmail',
