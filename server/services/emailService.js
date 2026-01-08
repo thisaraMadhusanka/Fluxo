@@ -236,7 +236,7 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
     </html>
         `;
 
-        const result = await sendViaEmailJS(userEmail, 'Fluxo Team', subject, html);
+        const result = await sendViaEmailJS(userEmail, 'Fluxo Team', subject, html, 'template_ofn5imf');
         console.log('✅ Approval email sent successfully');
         return result;
     } catch (error) {

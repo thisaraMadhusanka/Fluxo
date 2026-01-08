@@ -1,11 +1,13 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Trash2, Bell, Clock, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import clsx from 'clsx';
 
 const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onMarkRead, onDismiss, onClearAll }) => {
     const dropdownRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -119,7 +121,17 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
 
                                                 {/* Action Link (if any) */}
                                                 {notification.link && (
-                                                    <button className="mt-3 w-full py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-lg transition-all shadow-md shadow-gray-200 flex items-center justify-center gap-1 group/btn">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (!notification.isRead) {
+                                                                onMarkRead(notification._id);
+                                                            }
+                                                            navigate(notification.link);
+                                                            onClose();
+                                                        }}
+                                                        className="mt-3 w-full py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-lg transition-all shadow-md shadow-gray-200 flex items-center justify-center gap-1 group/btn"
+                                                    >
                                                         View Details <ChevronRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
                                                     </button>
                                                 )}
