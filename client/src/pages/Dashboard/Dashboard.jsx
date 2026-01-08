@@ -7,6 +7,7 @@ import TaskModal from '@/components/TaskModal';
 import CreateWorkspaceModal from '@/components/CreateWorkspaceModal';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '@/services/api';
+import { MiniChart } from '@/components/ui/MiniChart';
 
 const Dashboard = () => {
     const { currentWorkspace, loading: workspaceLoading } = useSelector((state) => state.workspaces);
@@ -109,26 +110,8 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Project Summary / Charts */}
-                <div className="lg:col-span-2 bg-card p-6 rounded-2xl border border-gray-100 min-h-[400px]">
-                    <h2 className="text-lg font-bold mb-4">Weekly Activity (Completed Tasks)</h2>
-                    <div className="h-[320px] w-full">
-                        {stats?.weeklyActivity ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats?.weeklyActivity || []}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                                    <YAxis axisLine={false} tickLine={false} />
-                                    <Tooltip
-                                        cursor={{ fill: '#F4ECE4' }}
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Bar dataKey="tasks" fill="#F26B3A" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="h-full flex items-center justify-center text-gray-400">Loading chart data...</div>
-                        )}
-                    </div>
+                <div className="lg:col-span-2">
+                    <MiniChart data={stats?.weeklyActivity?.map(d => ({ label: d.name, value: d.tasks }))} />
                 </div>
                 <div className="bg-card p-6 rounded-2xl border border-gray-100 min-h-[400px]">
                     <h2 className="text-lg font-bold mb-4">Today's Pending Tasks</h2>
