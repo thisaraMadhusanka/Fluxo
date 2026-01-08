@@ -2,7 +2,7 @@ import axios from 'axios';
 import { store } from '../store';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+    baseURL: import.meta.env.VITE_API_URL || '/api',
 });
 
 // Add a request interceptor to attach the token and workspace ID
