@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleSidebar } from '@/store/slices/uiSlice';
 import { fetchWorkspaces } from '@/store/slices/workspaceSlice';
 import NotificationDropdown from '@/components/NotificationDropdown';
-import { fetchNotifications, markAsRead, markAllAsRead, deleteNotification } from '@/store/slices/notificationSlice';
+import { fetchNotifications, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications } from '@/store/slices/notificationSlice';
 
 const DashboardLayout = ({ children }) => {
     const dispatch = useDispatch();
@@ -78,7 +78,7 @@ const DashboardLayout = ({ children }) => {
                                 unreadCount={unreadCount}
                                 onMarkRead={(id) => dispatch(markAsRead(id))}
                                 onDismiss={(id) => dispatch(deleteNotification(id))}
-                                onClearAll={() => dispatch(markAllAsRead())}
+                                onClearAll={() => dispatch(clearAllNotifications())}
                             />
                         </div>
 

@@ -10,6 +10,12 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
     const navigate = useNavigate();
 
     useEffect(() => {
+        if (isOpen && unreadCount > 0) {
+            onClearAll(); // This actually marks all as read based on DashboardLayout mapping
+        }
+    }, [isOpen, unreadCount, onClearAll]);
+
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 onClose();
@@ -122,11 +128,10 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
                                                 {/* Action Link (if any) */}
                                                 {notification.link && (
                                                     <button
+                                                        type="button"
                                                         onClick={(e) => {
+                                                            e.preventDefault();
                                                             e.stopPropagation();
-                                                            if (!notification.isRead) {
-                                                                onMarkRead(notification._id);
-                                                            }
                                                             navigate(notification.link);
                                                             onClose();
                                                         }}

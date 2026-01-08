@@ -146,50 +146,24 @@ const getInvitationEmailTemplate = (userEmail, workspaceName, inviterName, accep
     `;
 };
 
-// Send approval notification email using Gmail API
+// Send approval notification email
 exports.sendApprovalNotification = async (userEmail, userName) => {
     const nodemailer = require('nodemailer');
-    const { google } = require('googleapis');
 
     try {
         const loginUrl = process.env.CLIENT_URL
             ? `${process.env.CLIENT_URL}/login`
             : 'https://fluxo-xi.vercel.app/login';
 
-        console.log(`📧 Sending approval email to ${userEmail}`);
+        console.log(`📧 Sending approval email to ${userEmail} using App Password`);
         console.log(`🔗 Login URL: ${loginUrl}`);
 
-        // Configure OAuth2 client
-        const OAuth2 = google.auth.OAuth2;
-        const oauth2Client = new OAuth2(
-            process.env.GOOGLE_CLIENT_ID,
-            process.env.GOOGLE_CLIENT_SECRET,
-            'https://developers.google.com/oauthplayground'
-        );
-
-        oauth2Client.setCredentials({
-            refresh_token: process.env.GMAIL_REFRESH_TOKEN
-        });
-
-        // Debug log to verify credentials (without exposing secrets)
-        console.log('📧 Gmail Config Check:', {
-            user: process.env.EMAIL_USER ? 'Set' : 'Missing',
-            clientId: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Missing',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Missing',
-            refreshToken: process.env.GMAIL_REFRESH_TOKEN ? 'Set' : 'Missing',
-            refreshTokenLength: process.env.GMAIL_REFRESH_TOKEN ? process.env.GMAIL_REFRESH_TOKEN.length : 0
-        });
-
-        // Create nodemailer transport with Gmail
+        // Configure simple nodemailer transport
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                type: 'OAuth2',
                 user: process.env.EMAIL_USER,
-                clientId: process.env.GOOGLE_CLIENT_ID,
-                clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-                accessToken: await oauth2Client.getAccessToken()
+                pass: process.env.EMAIL_APP_PASSWORD
             }
         });
 
@@ -281,13 +255,85 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
         };
 
         const result = await transporter.sendMail(mailOptions);
-        console.log('✅ Approval email sent successfully via Gmail API');
-        console.log('Message ID:', result.messageId);
+        console.log('✅ Approval email sent successfully');
         return { success: true, messageId: result.messageId };
     } catch (error) {
         console.error('💥 sendApprovalNotification failed:', error.message);
-        console.error('Full error:', error);
         // Don't throw to prevent blocking the approval process
+    }
+};
+
+// Send account suspended notification
+exports.sendAccountSuspendedNotification = async (userEmail, userName) => {
+    const nodemailer = require('nodemailer');
+
+    try {
+        console.log(`📧 Sending suspended email to ${userEmail}`);
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_APP_PASSWORD
+            }
+        });
+
+        const subject = '⚠️ Account Suspended';
+        const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Suspended</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+            body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 0; }
+            .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 0; }
+            .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; }
+            .header { background: #ffffff; padding: 32px; text-align: center; border-bottom: 1px solid #f1f5f9; }
+            .logo { font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -1px; text-decoration: none; }
+            .logo span { color: #f97316; }
+            .hero { padding: 48px 32px 24px; text-align: center; }
+            .icon { width: 80px; height: 80px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; }
+            h1 { margin: 0 0 16px 0; color: #0f172a; font-size: 30px; letter-spacing: -1px; line-height: 1.2; }
+            p { margin: 0 0 24px 0; color: #475569; font-size: 17px; max-width: 460px; margin-left: auto; margin-right: auto; }
+            .footer { background: #f8fafc; padding: 24px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+        </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="container">
+                <div class="header">
+                    <a href="#" class="logo">Flux<span>o.</span></a>
+                </div>
+                <div class="hero">
+                    <div class="icon">⚠️</div>
+                    <h1>Account Suspended</h1>
+                    <p>Hi ${userName},<br>Your account has been suspended by the administrator. You no longer have access to Fluxo workspace.</p>
+                    <p>If you believe this is an error, please contact the administrator.</p>
+                </div>
+                <div class="footer">
+                    <p>© 2026 Fluxo Inc. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+        `;
+
+        const mailOptions = {
+            from: `Fluxo Team <${process.env.EMAIL_USER}>`,
+            to: userEmail,
+            subject: subject,
+            html: html
+        };
+
+        const result = await transporter.sendMail(mailOptions);
+        console.log('✅ Suspended email sent successfully');
+        return { success: true, messageId: result.messageId };
+    } catch (error) {
+        console.error('💥 sendAccountSuspendedNotification failed:', error.message);
     }
 };
 

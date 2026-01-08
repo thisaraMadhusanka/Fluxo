@@ -196,6 +196,14 @@ const deleteUser = async (req, res) => {
         const user = await User.findById(req.params.id);
 
         if (user) {
+            // Send suspended email
+            const { sendAccountSuspendedNotification } = require('../services/emailService');
+            try {
+                await sendAccountSuspendedNotification(user.email, user.name);
+            } catch (error) {
+                console.error('Failed to send suspended email:', error);
+            }
+
             await user.deleteOne();
             res.json({ message: 'User removed' });
         } else {
