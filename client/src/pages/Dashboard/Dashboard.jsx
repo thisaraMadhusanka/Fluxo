@@ -19,6 +19,7 @@ const Dashboard = () => {
     // Stats State
     const [stats, setStats] = useState(null);
     const [statsLoading, setStatsLoading] = useState(false);
+    const [activityPeriod, setActivityPeriod] = useState('weekly');
 
     useEffect(() => {
         if (currentWorkspace) {
