@@ -45,6 +45,7 @@ app.use('/api/workspaces/:workspaceId/roles', roleRoutes);
 app.use('/api', taskRoutes); // This route handles general task operations, potentially without a specific prefix like /tasks
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/access-requests', accessRequestRoutes);
+app.use('/api/landing', require('./routes/landingRoutes'));
 
 app.get('/', (req, res) => {
     res.send('TaskFlow API is running');

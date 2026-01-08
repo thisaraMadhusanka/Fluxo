@@ -52,6 +52,10 @@ const submitRequest = async (req, res) => {
             message
         });
 
+        // Send notification to admin
+        const { sendAccessRequestNotification } = require('../services/emailService');
+        await sendAccessRequestNotification({ name, email, company, message });
+
         res.status(201).json({
             message: 'Access request submitted successfully. You will receive an email once approved.',
             request: accessRequest

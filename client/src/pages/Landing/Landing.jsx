@@ -31,6 +31,7 @@ const Landing = () => {
     const handleContactSubmit = async (e) => {
         e.preventDefault();
         try {
+            await api.post('/landing/contact', contactData);
             showToast('Message sent successfully! We\'ll get back to you soon.', 'success');
             setContactData({ name: '', email: '', message: '' });
         } catch (error) {
@@ -40,8 +41,13 @@ const Landing = () => {
 
     const handleNewsletterSubmit = async (e) => {
         e.preventDefault();
-        showToast('Subscribed successfully!', 'success');
-        setNewsletterEmail('');
+        try {
+            await api.post('/landing/subscribe', { email: newsletterEmail });
+            showToast('Subscribed successfully!', 'success');
+            setNewsletterEmail('');
+        } catch (error) {
+            showToast('Failed to subscribe', 'error');
+        }
     };
 
     return (
