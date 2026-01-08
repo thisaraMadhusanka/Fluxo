@@ -111,7 +111,10 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Project Summary / Charts */}
                 <div className="lg:col-span-2">
-                    <MiniChart data={stats?.weeklyActivity?.map(d => ({ label: d.name, value: d.tasks }))} />
+                    <MiniChart
+                        data={stats?.weeklyActivity?.map(d => ({ label: d.name, value: d.tasks }))}
+                        onPeriodChange={setActivityPeriod}
+                    />
                 </div>
                 <div className="bg-card p-6 rounded-2xl border border-gray-100 min-h-[400px]">
                     <h2 className="text-lg font-bold mb-4">Today's Pending Tasks</h2>
