@@ -21,8 +21,8 @@ const emailStyles = `
     .logo { font-size: 28px; font-weight: 800; color: #1F1F1F; letter-spacing: -1px; text-decoration: none; }
     .logo span { color: #F26B3A; }
     .hero { padding: 48px 32px 24px; text-align: center; }
-    .success-icon { width: 80px; height: 80px; background: #fff1eb; color: #F26B3A; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 24px auto; line-height: 1; }
-    .danger-icon { width: 80px; height: 80px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 24px auto; line-height: 1; }
+    .success-icon { width: 80px; height: 80px; background: #fff1eb; color: #F26B3A; border-radius: 50%; display: block; text-align: center; line-height: 80px; font-size: 40px; margin: 0 auto 24px auto; }
+    .danger-icon { width: 80px; height: 80px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: block; text-align: center; line-height: 80px; font-size: 40px; margin: 0 auto 24px auto; }
     h1 { margin: 0 0 16px 0; color: #1F1F1F; font-size: 30px; letter-spacing: -1px; line-height: 1.2; font-weight: 800; }
     p { margin: 0 0 24px 0; color: #7C6E65; font-size: 16px; max-width: 480px; margin-left: auto; margin-right: auto; }
     .content { padding: 0 40px 40px; text-align: center; }
