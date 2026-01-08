@@ -37,16 +37,16 @@ exports.registerUser = async (req, res) => {
         });
 
         if (!isOwner) {
-            const { sendRegistrationNotification } = require('../services/emailService');
             // Send notification to owner
             await sendRegistrationNotification(name, email);
 
-            // Create notification for owner to see in notification panel
+            // Create notification for ALL owners
             const { createNotification } = require('./notificationController');
-            const ownerUser = await User.findOne({ email: 'thisarasanka4@gmail.com' });
-            if (ownerUser) {
+            const owners = await User.find({ role: 'Owner' });
+
+            for (const owner of owners) {
                 await createNotification({
-                    userId: ownerUser._id,
+                    userId: owner._id,
                     type: 'system',
                     title: 'New User Registration',
                     message: `${name} (${email}) has registered and is waiting for approval`,
@@ -194,12 +194,13 @@ exports.googleAuth = async (req, res) => {
                 const { sendRegistrationNotification } = require('../services/emailService');
                 await sendRegistrationNotification(name, email);
 
-                // Create notification for owner in notification panel
+                // Create notification for ALL owners
                 const { createNotification } = require('./notificationController');
-                const ownerUser = await User.findOne({ email: 'thisarasanka4@gmail.com' });
-                if (ownerUser) {
+                const owners = await User.find({ role: 'Owner' });
+
+                for (const owner of owners) {
                     await createNotification({
-                        userId: ownerUser._id,
+                        userId: owner._id,
                         type: 'system',
                         title: 'New User Registration (Google)',
                         message: `${name} (${email}) has registered via Google and is waiting for approval`,
