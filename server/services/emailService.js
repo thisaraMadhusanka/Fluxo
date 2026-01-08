@@ -1,103 +1,50 @@
-const emailjs = require('@emailjs/nodejs');
+const nodemailer = require('nodemailer');
 
-// Initialize EmailJS with your credentials
-// Using the same credentials as frontend for consistency
-const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || 'service_2xvzpo8';
-const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || 'CzO1CtVscsgKy6YGK';
-const EMAILJS_PRIVATE_KEY = process.env.EMAILJS_PRIVATE_KEY; // Add this to .env
-
-// Send email via EmailJS
-const sendViaEmailJS = async (to, fromName, subject, htmlBody, templateId = null) => {
-    console.log('\n=== EMAIL SERVICE (EmailJS) ===');
-    console.log('Service ID:', EMAILJS_SERVICE_ID || 'MISSING');
-    console.log('Public Key:', EMAILJS_PUBLIC_KEY ? 'SET' : 'MISSING');
-    console.log('Recipient:', to);
-    console.log('Subject:', subject);
-
-    if (!EMAILJS_SERVICE_ID || !EMAILJS_PUBLIC_KEY || !EMAILJS_PRIVATE_KEY) {
-        console.error('❌ ERROR: EmailJS credentials not configured in .env');
-        throw new Error('EmailJS credentials are required');
-    }
-
-    try {
-        console.log('📤 Sending email via EmailJS...');
-
-        // EmailJS template parameters
-        const templateParams = {
-            to_email: to,
-            from_name: fromName || 'Fluxo',
-            subject: subject,
-            message_html: htmlBody,
-            reply_to: 'noreply@fluxo.app'
-        };
-
-        const response = await emailjs.send(
-            EMAILJS_SERVICE_ID,
-            templateId || process.env.EMAILJS_TEMPLATE_ID || 'template_default',
-            templateParams,
-            {
-                publicKey: EMAILJS_PUBLIC_KEY,
-                privateKey: EMAILJS_PRIVATE_KEY,
-            }
-        );
-
-        console.log('✅ Email sent successfully via EmailJS');
-        console.log('Response:', response);
-        return { success: true, messageId: response.text };
-    } catch (error) {
-        console.error('❌ EmailJS Request Failed:');
-        console.error('   Error:', error.message);
-        console.error('   Full Error:', error);
-        throw error;
-    }
+// Universal Transporter (shared config)
+const createTransporter = () => {
+    return nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_APP_PASSWORD
+        }
+    });
 };
+
+// Styles for all emails
+const emailStyles = `
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #1F1F1F; background-color: #F4ECE4; margin: 0; padding: 0; }
+    .wrapper { width: 100%; background-color: #F4ECE4; padding: 40px 0; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden; border: 1px solid #e2e8f0; }
+    .header { background: #ffffff; padding: 32px; text-align: center; border-bottom: 1px solid #f1f5f9; }
+    .logo { font-size: 28px; font-weight: 800; color: #1F1F1F; letter-spacing: -1px; text-decoration: none; }
+    .logo span { color: #F26B3A; }
+    .hero { padding: 48px 32px 24px; text-align: center; }
+    .success-icon { width: 80px; height: 80px; background: #fff1eb; color: #F26B3A; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; }
+    .danger-icon { width: 80px; height: 80px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; }
+    h1 { margin: 0 0 16px 0; color: #1F1F1F; font-size: 30px; letter-spacing: -1px; line-height: 1.2; font-weight: 800; }
+    p { margin: 0 0 24px 0; color: #7C6E65; font-size: 16px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .content { padding: 0 40px 40px; text-align: center; }
+    .btn { display: inline-block; background: #F26B3A; color: white !important; font-weight: 600; padding: 16px 48px; border-radius: 12px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(242, 107, 58, 0.3); transition: all 0.2s; }
+    .btn:hover { background: #ea580c; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(242, 107, 58, 0.4); }
+    .footer { background: #F4ECE4; padding: 24px; text-align: center; font-size: 13px; color: #7C6E65; }
+`;
 
 // Send invitation email
-exports.sendInvitationEmail = async (userEmail, workspaceName, inviterName, acceptUrl) => {
+exports.sendInvitationEmail = async (email, workspaceName, inviterName, inviteLink) => {
     try {
-        const subject = `You're invited to join ${workspaceName}`;
-        const html = getInvitationEmailTemplate(userEmail, workspaceName, inviterName, acceptUrl);
+        const transporter = createTransporter();
+        const subject = `${inviterName} invited you to join ${workspaceName} on Fluxo`;
 
-        return await sendViaEmailJS(userEmail, 'Fluxo Team', subject, html);
-    } catch (error) {
-        console.error('💥 sendInvitationEmail failed:', error.message);
-        throw error;
-    }
-};
-
-// Email template for invitations
-const getInvitationEmailTemplate = (userEmail, workspaceName, inviterName, acceptUrl) => {
-    return `
+        const html = `
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>You've been invited to Fluxo</title>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-            body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 0; }
-            .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 0; }
-            .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); overflow: hidden; border: 1px solid #e2e8f0; }
-            .header { background: #ffffff; padding: 32px; text-align: center; border-bottom: 1px solid #f1f5f9; }
-            .logo { font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -1px; text-decoration: none; }
-            .logo span { color: #f97316; }
-            .hero { padding: 40px 32px; text-align: center; background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%); }
-            .content { padding: 0 32px 32px 32px; }
-            .avatar-group { margin-bottom: 24px; }
-            .avatar { width: 64px; height: 64px; border-radius: 50%; background: #f97316; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; border: 4px solid white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2); }
-            h2 { margin: 0 0 16px 0; color: #0f172a; font-size: 24px; letter-spacing: -0.5px; }
-            p { margin: 0 0 24px 0; color: #475569; font-size: 16px; }
-            .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 32px; }
-            .card-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-            .card-row:last-child { margin-bottom: 0; }
-            .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; }
-            .value { font-size: 14px; color: #0f172a; font-weight: 600; }
-            .btn { display: inline-block; background: #f97316; color: white !important; font-weight: 600; padding: 16px 32px; border-radius: 100px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.4); transition: all 0.2s; }
-            .btn:hover { background: #ea580c; transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(249, 115, 22, 0.5); }
-            .footer { background: #f8fafc; padding: 24px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
-            .link { color: #f97316; text-decoration: none; font-weight: 500; }
-        </style>
+        <title>Invitation to ${workspaceName}</title>
+        <style>${emailStyles}</style>
     </head>
     <body>
         <div class="wrapper">
@@ -106,66 +53,47 @@ const getInvitationEmailTemplate = (userEmail, workspaceName, inviterName, accep
                     <a href="#" class="logo">Flux<span>o.</span></a>
                 </div>
                 <div class="hero">
-                    <div class="avatar-group">
-                        <div class="avatar">${inviterName.charAt(0).toUpperCase()}</div>
-                    </div>
-                    <h2>Invitation to Collaborate</h2>
+                    <div class="success-icon">💌</div>
+                    <h1>You've Been Invited</h1>
                     <p><strong>${inviterName}</strong> has invited you to join the workspace <strong>${workspaceName}</strong>.</p>
                 </div>
                 <div class="content">
-                    <div class="card">
-                        <div class="card-row">
-                            <span class="label">Workspace</span>
-                            <span class="value">${workspaceName}</span>
-                        </div>
-                        <div class="card-row">
-                            <span class="label">Role</span>
-                            <span class="value">Member</span>
-                        </div>
-                        <div class="card-row">
-                            <span class="label">Invited by</span>
-                            <span class="value">${inviterName}</span>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: center; margin-bottom: 40px;">
-                        <a href="${acceptUrl}" class="btn">Join Workspace</a>
-                    </div>
-                    
-                    <p style="text-align: center; font-size: 14px; color: #64748b;">
-                        This invite link will expire in 7 days. If you weren't expecting this, you can safely ignore this email.
-                    </p>
+                    <a href="${inviteLink}" class="btn">Accept Invitation</a>
                 </div>
                 <div class="footer">
-                    <p>© 2026 Fluxo Inc. Project Management Made Simple.</p>
+                    <p>© 2026 Fluxo Inc. All rights reserved.</p>
                 </div>
             </div>
         </div>
     </body>
     </html>
-    `;
+        `;
+
+        await transporter.sendMail({
+            from: `Fluxo Team <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject,
+            html
+        });
+
+        console.log('✅ Invitation email sent to', email);
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to send invitation email:', error);
+        throw error;
+    }
 };
 
 // Send approval notification email
 exports.sendApprovalNotification = async (userEmail, userName) => {
-    const nodemailer = require('nodemailer');
-
     try {
         const loginUrl = process.env.CLIENT_URL
             ? `${process.env.CLIENT_URL}/login`
             : 'https://fluxo-xi.vercel.app/login';
 
         console.log(`📧 Sending approval email to ${userEmail} using App Password`);
-        console.log(`🔗 Login URL: ${loginUrl}`);
 
-        // Configure simple nodemailer transport
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_APP_PASSWORD
-            }
-        });
+        const transporter = createTransporter();
 
         const subject = '🎉 You\'re in! Your Fluxo account is checked and approved';
         const html = `
@@ -175,30 +103,7 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Account Approved</title>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-            body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 0; }
-            .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 0; }
-            .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; }
-            .header { background: #ffffff; padding: 32px; text-align: center; border-bottom: 1px solid #f1f5f9; }
-            .logo { font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -1px; text-decoration: none; }
-            .logo span { color: #f97316; }
-            .hero { padding: 48px 32px 24px; text-align: center; }
-            .success-icon { width: 80px; height: 80px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.1); }
-            h1 { margin: 0 0 16px 0; color: #0f172a; font-size: 30px; letter-spacing: -1px; line-height: 1.2; }
-            p { margin: 0 0 24px 0; color: #475569; font-size: 17px; max-width: 460px; margin-left: auto; margin-right: auto; }
-            .content { padding: 0 40px 40px; text-align: center; }
-            .btn { display: inline-block; background: #f97316; color: white !important; font-weight: 600; padding: 18px 48px; border-radius: 12px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3); transition: all 0.2s; width: 100%; box-sizing: border-box; text-align: center; }
-            .btn:hover { background: #ea580c; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4); }
-            .divider { height: 1px; background: #e2e8f0; margin: 32px 0; }
-            .next-steps { text-align: left; background: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; }
-            .step { display: flex; align-items: self-start; margin-bottom: 16px; }
-            .step:last-child { margin-bottom: 0; }
-            .step-icon { min-width: 24px; height: 24px; background: #e0f2fe; color: #0284c7; border-radius: 50%; padding: 4px; margin-right: 12px; margin-top: 2px; }
-            .step-content h4 { margin: 0 0 4px 0; font-size: 15px; color: #0f172a; }
-            .step-content p { font-size: 14px; margin: 0; text-align: left; }
-            .footer { background: #f8fafc; padding: 24px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
-        </style>
+        <style>${emailStyles}</style>
     </head>
     <body>
         <div class="wrapper">
@@ -209,33 +114,10 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
                 <div class="hero">
                     <div class="success-icon">🚀</div>
                     <h1>You're Ready to Launch!</h1>
-                    <p>Hi ${userName},<br>Your account has been officially approved by our admins. You now have full access to Fluxo workspace.</p>
+                    <p>Hi ${userName},<br>Your account has been officially approved. You now have full access to Fluxo workspace.</p>
                 </div>
                 <div class="content">
                     <a href="${loginUrl}" class="btn">Login to Dashboard</a>
-                    
-                    <div class="divider"></div>
-                    
-                    <div class="next-steps">
-                        <div class="step">
-                            <div class="step-content">
-                                <h4>✅ Complete Setup</h4>
-                                <p>Update your profile with a photo and bio.</p>
-                            </div>
-                        </div>
-                        <div class="step">
-                            <div class="step-content">
-                                <h4>📊 Create Projects</h4>
-                                <p>Start organizing your tasks and timeline.</p>
-                            </div>
-                        </div>
-                        <div class="step">
-                            <div class="step-content">
-                                <h4>👥 Invite Team</h4>
-                                <p>Add members to your workspace to collaborate.</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 <div class="footer">
                     <p>Questions? Just reply to this email.</p>
@@ -247,36 +129,25 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
     </html>
         `;
 
-        const mailOptions = {
+        const result = await transporter.sendMail({
             from: `Fluxo Team <${process.env.EMAIL_USER}>`,
             to: userEmail,
-            subject: subject,
-            html: html
-        };
+            subject,
+            html
+        });
 
-        const result = await transporter.sendMail(mailOptions);
         console.log('✅ Approval email sent successfully');
         return { success: true, messageId: result.messageId };
     } catch (error) {
         console.error('💥 sendApprovalNotification failed:', error.message);
-        // Don't throw to prevent blocking the approval process
     }
 };
 
 // Send account suspended notification
 exports.sendAccountSuspendedNotification = async (userEmail, userName) => {
-    const nodemailer = require('nodemailer');
-
     try {
         console.log(`📧 Sending suspended email to ${userEmail}`);
-
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_APP_PASSWORD
-            }
-        });
+        const transporter = createTransporter();
 
         const subject = '⚠️ Account Suspended';
         const html = `
@@ -286,20 +157,7 @@ exports.sendAccountSuspendedNotification = async (userEmail, userName) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Account Suspended</title>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-            body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 0; }
-            .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 0; }
-            .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; }
-            .header { background: #ffffff; padding: 32px; text-align: center; border-bottom: 1px solid #f1f5f9; }
-            .logo { font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -1px; text-decoration: none; }
-            .logo span { color: #f97316; }
-            .hero { padding: 48px 32px 24px; text-align: center; }
-            .icon { width: 80px; height: 80px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; }
-            h1 { margin: 0 0 16px 0; color: #0f172a; font-size: 30px; letter-spacing: -1px; line-height: 1.2; }
-            p { margin: 0 0 24px 0; color: #475569; font-size: 17px; max-width: 460px; margin-left: auto; margin-right: auto; }
-            .footer { background: #f8fafc; padding: 24px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
-        </style>
+        <style>${emailStyles}</style>
     </head>
     <body>
         <div class="wrapper">
@@ -308,10 +166,9 @@ exports.sendAccountSuspendedNotification = async (userEmail, userName) => {
                     <a href="#" class="logo">Flux<span>o.</span></a>
                 </div>
                 <div class="hero">
-                    <div class="icon">⚠️</div>
+                    <div class="danger-icon">⚠️</div>
                     <h1>Account Suspended</h1>
                     <p>Hi ${userName},<br>Your account has been suspended by the administrator. You no longer have access to Fluxo workspace.</p>
-                    <p>If you believe this is an error, please contact the administrator.</p>
                 </div>
                 <div class="footer">
                     <p>© 2026 Fluxo Inc. All rights reserved.</p>
@@ -322,14 +179,13 @@ exports.sendAccountSuspendedNotification = async (userEmail, userName) => {
     </html>
         `;
 
-        const mailOptions = {
+        const result = await transporter.sendMail({
             from: `Fluxo Team <${process.env.EMAIL_USER}>`,
             to: userEmail,
-            subject: subject,
-            html: html
-        };
+            subject,
+            html
+        });
 
-        const result = await transporter.sendMail(mailOptions);
         console.log('✅ Suspended email sent successfully');
         return { success: true, messageId: result.messageId };
     } catch (error) {
@@ -340,36 +196,46 @@ exports.sendAccountSuspendedNotification = async (userEmail, userName) => {
 // Send registration notification to admin
 exports.sendRegistrationNotification = async (userName, userEmail) => {
     try {
+        const transporter = createTransporter();
+
+        // This is sent to the system admin for email alerts
         const adminEmail = 'thisarasanka4@gmail.com';
-        const subject = '👤 New User Registration on Fluxo';
+
+        const subject = `New User Registration: ${userName}`;
         const html = `
     <!DOCTYPE html>
     <html>
     <head>
-        <meta charset="UTF-8">
-        <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .card { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #f97316; }
-        </style>
+        <style>${emailStyles}</style>
     </head>
     <body>
-        <div class="container">
-            <h2>New User Awaiting Approval</h2>
-            <div class="card">
-                <p><strong>Name:</strong> ${userName}</p>
-                <p><strong>Email:</strong> ${userEmail}</p>
+        <div class="wrapper">
+            <div class="container">
+                <div class="header">
+                    <a href="#" class="logo">Flux<span>o.</span></a>
+                </div>
+                <div class="hero">
+                    <div class="success-icon">👤</div>
+                    <h1>New Registration</h1>
+                    <p><strong>${userName}</strong> (${userEmail}) has registered and is waiting for approval.</p>
+                </div>
+                <div class="content">
+                    <a href="https://fluxo-xi.vercel.app/settings/users" class="btn">Manage Users</a>
+                </div>
             </div>
-            <p>Please log in to your Fluxo admin panel to approve or reject this user.</p>
         </div>
     </body>
     </html>
         `;
 
-        return await sendViaEmailJS(adminEmail, 'Fluxo System', subject, html);
+        await transporter.sendMail({
+            from: `Fluxo System <${process.env.EMAIL_USER}>`,
+            to: adminEmail,
+            subject,
+            html
+        });
+        console.log('✅ Admin registration alert sent');
     } catch (error) {
-        console.error('💥 sendRegistrationNotification failed:', error.message);
+        console.error('Failed to send admin alert:', error);
     }
 };
-
-module.exports = exports;
