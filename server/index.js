@@ -42,10 +42,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/workspaces/:workspaceId/roles', roleRoutes);
-app.use('/api', taskRoutes); // This route handles general task operations, potentially without a specific prefix like /tasks
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/access-requests', accessRequestRoutes);
 app.use('/api/landing', require('./routes/landingRoutes'));
+app.use('/api', taskRoutes); // This route handles general task operations (Ensure this is AFTER specific routes to avoid middleware conflicts)
 
 app.get('/', (req, res) => {
     res.send('TaskFlow API is running');

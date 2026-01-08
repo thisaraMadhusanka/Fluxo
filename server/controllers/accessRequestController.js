@@ -19,6 +19,7 @@ const generatePassword = () => {
 // @access  Public
 const submitRequest = async (req, res) => {
     try {
+        console.log('Received access request:', req.body);
         const { name, email, company, message } = req.body;
 
         if (!name || !email) {

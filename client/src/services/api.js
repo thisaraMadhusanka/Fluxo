@@ -12,7 +12,19 @@ api.interceptors.request.use(
         const token = localStorage.getItem('token');
         const workspaceId = state.workspaces?.currentWorkspace?._id;
 
-        if (token) {
+        // List of public endpoints that don't need auth
+        const publicEndpoints = [
+            '/auth/login',
+            '/auth/register',
+            '/access-requests',
+            '/landing/contact',
+            '/landing/subscribe'
+        ];
+
+        // Check if current URL is public
+        const isPublic = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+
+        if (token && !isPublic) {
             config.headers.Authorization = `Bearer ${token}`;
         }
 
