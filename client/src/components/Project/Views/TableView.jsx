@@ -4,7 +4,6 @@ import Dropdown from '@/components/Dropdown';
 import { useDispatch } from 'react-redux';
 import { startTimer, stopTimer, updateTask } from '@/store/slices/taskSlice';
 import { useToast } from '@/components/Toast';
-import { AnimatedTooltip } from '@/components/ui/AnimatedTooltip.jsx';
 
 const TableView = ({ tasks = [], onTaskClick, onAddTaskClick, project }) => {
     const dispatch = useDispatch();
@@ -227,19 +226,28 @@ const TableView = ({ tasks = [], onTaskClick, onAddTaskClick, project }) => {
 
                                 {visibleColumns.assignees && (
                                     <td className="px-6 py-4">
-                                        {task.assignees?.filter(a => a).length > 0 ? (
-                                            <AnimatedTooltip
-                                                items={task.assignees.filter(a => a).map(a => ({
-                                                    id: a._id,
-                                                    name: a.name,
-                                                    designation: getMemberRole(a._id),
-                                                    image: a.avatar || `https://ui-avatars.com/api/?name=${a.name.replace(' ', '+')}&background=random`
-                                                }))}
-                                                className="justify-start"
-                                            />
-                                        ) : (
-                                            <span className="text-gray-400 text-sm italic">Unassigned</span>
-                                        )}
+                                        <div className="flex -space-x-2 overflow-hidden hover:space-x-1 transition-all py-1">
+                                            {task.assignees?.filter(a => a).map((a, i) => (
+                                                <div key={i} className="group/avatar relative flex-shrink-0 cursor-help">
+                                                    <div className="w-8 h-8 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center overflow-hidden ring-1 ring-gray-100">
+                                                        {a.avatar ? (
+                                                            <img src={a.avatar} alt={a.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <span className="text-xs font-bold text-gray-600">{a.name?.[0]}</span>
+                                                        )}
+                                                    </div>
+                                                    {/* Rich Tooltip */}
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/avatar:block bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap z-20 shadow-xl">
+                                                        <div className="font-bold">{a.name}</div>
+                                                        <div className="text-gray-400 text-[10px] uppercase tracking-wide mt-0.5">{getMemberRole(a._id)}</div>
+                                                        <div className="text-gray-500 text-[10px] lowercase">{a.email}</div>
+                                                        {/* Triangle */}
+                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {(!task.assignees || task.assignees.length === 0) && <span className="text-gray-400 text-sm italic">Unassigned</span>}
+                                        </div>
                                     </td>
                                 )}
 

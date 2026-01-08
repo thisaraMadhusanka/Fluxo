@@ -18,7 +18,6 @@ import ProjectSettingsModal from '@/components/ProjectSettingsModal';
 import api from '@/services/api';
 import { useToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { AnimatedTooltip } from '@/components/ui/AnimatedTooltip.jsx';
 
 const ProjectDetails = () => {
     const { id } = useParams();
@@ -175,22 +174,24 @@ const ProjectDetails = () => {
 
                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
                         {/* Members Stack */}
-                        <div className="flex items-center gap-2 mr-1">
-                            <div className="flex w-full items-center justify-center">
-                                <AnimatedTooltip
-                                    items={(project.members || [])
-                                        .filter(m => m.user && m.status !== 'removed' && m.status !== 'banned')
-                                        .map(m => ({
-                                            id: m.user._id,
-                                            name: m.user.name,
-                                            designation: m.role || 'Member',
-                                            image: m.user.avatar || `https://ui-avatars.com/api/?name=${m.user.name}&background=random`
-                                        }))}
-                                />
-                            </div>
+                        <div className="flex -space-x-2 mr-1">
+                            {(project.members || []).filter(m => m.user && m.status !== 'removed' && m.status !== 'banned').slice(0, 5).map((member, i) => (
+                                <div key={member.user?._id || i} className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center overflow-hidden shrink-0" title={member.user?.name}>
+                                    {member.user?.avatar ? (
+                                        <img src={member.user.avatar} alt={member.user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-[10px] md:text-xs font-medium text-gray-600">{(member.user?.name || 'U')[0]}</span>
+                                    )}
+                                </div>
+                            ))}
+                            {(project.members?.length || 0) > 5 && (
+                                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center text-[10px] md:text-xs text-gray-500 shrink-0">
+                                    +{project.members.length - 5}
+                                </div>
+                            )}
                             <button
                                 onClick={() => setCurrentView('team')}
-                                className="w-8 h-8 rounded-full bg-white border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 ml-4 transition-colors shrink-0"
+                                className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 ml-1 transition-colors shrink-0"
                             >
                                 <Users size={12} />
                             </button>
