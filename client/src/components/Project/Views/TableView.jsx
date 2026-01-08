@@ -4,7 +4,7 @@ import Dropdown from '@/components/Dropdown';
 import { useDispatch } from 'react-redux';
 import { startTimer, stopTimer, updateTask } from '@/store/slices/taskSlice';
 import { useToast } from '@/components/Toast';
-import { AnimatedTooltip } from '@/components/ui/AnimatedTooltip';
+import { AnimatedTooltip } from '@/components/ui/AnimatedTooltip.jsx';
 
 const TableView = ({ tasks = [], onTaskClick, onAddTaskClick, project }) => {
     const dispatch = useDispatch();
