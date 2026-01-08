@@ -146,8 +146,11 @@ const getInvitationEmailTemplate = (userEmail, workspaceName, inviterName, accep
     `;
 };
 
-// Send approval notification email
+// Send approval notification email using Gmail API
 exports.sendApprovalNotification = async (userEmail, userName) => {
+    const nodemailer = require('nodemailer');
+    const { google } = require('googleapis');
+
     try {
         const loginUrl = process.env.CLIENT_URL
             ? `${process.env.CLIENT_URL}/login`
@@ -155,6 +158,31 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
 
         console.log(`📧 Sending approval email to ${userEmail}`);
         console.log(`🔗 Login URL: ${loginUrl}`);
+
+        // Configure OAuth2 client
+        const OAuth2 = google.auth.OAuth2;
+        const oauth2Client = new OAuth2(
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            'https://developers.google.com/oauthplayground'
+        );
+
+        oauth2Client.setCredentials({
+            refresh_token: process.env.GMAIL_REFRESH_TOKEN
+        });
+
+        // Create nodemailer transport with Gmail
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                type: 'OAuth2',
+                user: process.env.EMAIL_USER,
+                clientId: process.env.GOOGLE_CLIENT_ID,
+                clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+                accessToken: await oauth2Client.getAccessToken()
+            }
+        });
 
         const subject = '🎉 You\'re in! Your Fluxo account is checked and approved';
         const html = `
@@ -236,9 +264,17 @@ exports.sendApprovalNotification = async (userEmail, userName) => {
     </html>
         `;
 
-        const result = await sendViaEmailJS(userEmail, 'Fluxo Team', subject, html, 'template_ofn5imf');
-        console.log('✅ Approval email sent successfully');
-        return result;
+        const mailOptions = {
+            from: `Fluxo Team <${process.env.EMAIL_USER}>`,
+            to: userEmail,
+            subject: subject,
+            html: html
+        };
+
+        const result = await transporter.sendMail(mailOptions);
+        console.log('✅ Approval email sent successfully via Gmail API');
+        console.log('Message ID:', result.messageId);
+        return { success: true, messageId: result.messageId };
     } catch (error) {
         console.error('💥 sendApprovalNotification failed:', error.message);
         console.error('Full error:', error);
