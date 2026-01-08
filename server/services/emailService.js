@@ -14,21 +14,21 @@ const createTransporter = () => {
 // Styles for all emails
 const emailStyles = `
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-    body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #1F1F1F; background-color: #F4ECE4; margin: 0; padding: 0; }
-    .wrapper { width: 100%; background-color: #F4ECE4; padding: 40px 0; }
-    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden; border: 1px solid #e2e8f0; }
+    body { font-family: 'Plus Jakarta Sans', Arial, sans-serif; line-height: 1.6; color: #1F1F1F; background-color: #000000; margin: 0; padding: 0; }
+    .wrapper { width: 100%; background-color: #000000; padding: 40px 0; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(255, 255, 255, 0.1); overflow: hidden; border: 1px solid #333333; }
     .header { background: #ffffff; padding: 32px; text-align: center; border-bottom: 1px solid #f1f5f9; }
     .logo { font-size: 28px; font-weight: 800; color: #1F1F1F; letter-spacing: -1px; text-decoration: none; }
     .logo span { color: #F26B3A; }
     .hero { padding: 48px 32px 24px; text-align: center; }
-    .success-icon { width: 80px; height: 80px; background: #fff1eb; color: #F26B3A; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; }
-    .danger-icon { width: 80px; height: 80px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 24px; }
+    .success-icon { width: 80px; height: 80px; background: #fff1eb; color: #F26B3A; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 24px auto; line-height: 1; }
+    .danger-icon { width: 80px; height: 80px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 24px auto; line-height: 1; }
     h1 { margin: 0 0 16px 0; color: #1F1F1F; font-size: 30px; letter-spacing: -1px; line-height: 1.2; font-weight: 800; }
     p { margin: 0 0 24px 0; color: #7C6E65; font-size: 16px; max-width: 480px; margin-left: auto; margin-right: auto; }
     .content { padding: 0 40px 40px; text-align: center; }
     .btn { display: inline-block; background: #F26B3A; color: white !important; font-weight: 600; padding: 16px 48px; border-radius: 12px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(242, 107, 58, 0.3); transition: all 0.2s; }
     .btn:hover { background: #ea580c; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(242, 107, 58, 0.4); }
-    .footer { background: #F4ECE4; padding: 24px; text-align: center; font-size: 13px; color: #7C6E65; }
+    .footer { background: #000000; padding: 24px; text-align: center; font-size: 13px; color: #666666; }
 `;
 
 // Send invitation email
