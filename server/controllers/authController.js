@@ -77,6 +77,8 @@ exports.registerUser = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 avatar: user.avatar,
+                position: user.position,
+                bio: user.bio,
                 isApproved: user.isApproved,
                 privateWorkspaceId: user.privateWorkspaceId
             },
@@ -136,6 +138,9 @@ exports.loginUser = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 avatar: user.avatar,
+                position: user.position,
+                bio: user.bio,
+                privateWorkspaceId: user.privateWorkspaceId
             },
             token,
         });
@@ -255,6 +260,8 @@ exports.googleAuth = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 avatar: user.avatar,
+                position: user.position,
+                bio: user.bio,
                 privateWorkspaceId: user.privateWorkspaceId
             },
             token,

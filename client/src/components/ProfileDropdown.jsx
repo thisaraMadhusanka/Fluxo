@@ -89,7 +89,7 @@ const ProfileDropdown = () => {
                             <p className="text-sm text-gray-500 truncate">{user?.email || 'user@example.com'}</p>
                             <div className="mt-1">
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
-                                    {user?.role || 'Member'}
+                                    {user?.position || 'Team Member'}
                                 </span>
                             </div>
                         </div>
