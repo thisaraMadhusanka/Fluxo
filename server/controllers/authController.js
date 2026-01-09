@@ -66,27 +66,7 @@ exports.registerUser = async (req, res) => {
         // However, standard flow: Register -> Pending.
 
         // Auto-create private workspace for the user
-        const Workspace = require('../models/Workspace');
-        const privateWorkspace = await Workspace.create({
-            name: 'My Workspace',
-            owner: user._id,
-            isPrivate: true,
-            canAddMembers: false,
-            members: [{
-                user: user._id,
-                role: 'Owner',
-                permissions: {
-                    canManageSettings: true,
-                    canManageMembers: false,
-                    canDeleteWorkspace: true
-                }
-            }]
-        });
-
-        // Link workspace to user
-        user.privateWorkspaceId = privateWorkspace._id;
-        user.lastActiveWorkspace = privateWorkspace._id;
-        await user.save();
+        await ensurePrivateWorkspace(user);
 
         const token = generateToken(user._id);
 
@@ -144,6 +124,9 @@ exports.loginUser = async (req, res) => {
             return res.status(403).json({ message: 'Account pending approval. Please contact the owner.' });
         }
 
+        // Ensure private workspace exists
+        await ensurePrivateWorkspace(user);
+
         const token = generateToken(user._id);
 
         res.status(200).json({
@@ -160,6 +143,43 @@ exports.loginUser = async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Server error during login' });
     }
+};
+
+// Helper to ensure private workspace exists
+const ensurePrivateWorkspace = async (user) => {
+    if (user.privateWorkspaceId) return user.privateWorkspaceId;
+
+    const Workspace = require('../models/Workspace');
+
+    // Double check if one already exists for this owner
+    const existing = await Workspace.findOne({ owner: user._id, isPrivate: true });
+    if (existing) {
+        user.privateWorkspaceId = existing._id;
+        user.lastActiveWorkspace = existing._id;
+        await user.save();
+        return existing._id;
+    }
+
+    const privateWorkspace = await Workspace.create({
+        name: 'My Workspace',
+        owner: user._id,
+        isPrivate: true,
+        canAddMembers: false,
+        members: [{
+            user: user._id,
+            role: 'Owner', // Owner role for private workspace
+            permissions: {
+                canManageSettings: true,
+                canManageMembers: false,
+                canDeleteWorkspace: true
+            }
+        }]
+    });
+
+    user.privateWorkspaceId = privateWorkspace._id;
+    user.lastActiveWorkspace = privateWorkspace._id;
+    await user.save();
+    return privateWorkspace._id;
 };
 
 // Google OAuth authentication
@@ -218,6 +238,9 @@ exports.googleAuth = async (req, res) => {
             }
         }
 
+        // Ensure private workspace exists for ALL Google users (new or existing)
+        await ensurePrivateWorkspace(user);
+
         // Check info approved (even for existing users)
         if (!user.isApproved) {
             return res.status(403).json({ message: 'Account pending approval. Please contact the owner.' });
@@ -232,6 +255,7 @@ exports.googleAuth = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 avatar: user.avatar,
+                privateWorkspaceId: user.privateWorkspaceId
             },
             token,
         });

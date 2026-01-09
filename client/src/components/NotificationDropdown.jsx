@@ -1,19 +1,15 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Trash2, Bell, Clock, ChevronRight } from 'lucide-react';
+import { X, Check, Trash2, Bell, Clock, ChevronRight, CheckCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import clsx from 'clsx';
 
-const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onMarkRead, onDismiss, onClearAll }) => {
+const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onMarkRead, onDismiss, onClearAll, onMarkAllRead }) => {
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (isOpen && unreadCount > 0) {
-            onClearAll(); // This actually marks all as read based on DashboardLayout mapping
-        }
-    }, [isOpen, unreadCount, onClearAll]);
+    // REMOVED: The auto-clear useEffect that was deleting notifications
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -29,6 +25,25 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen, onClose]);
+
+    const handleAction = (notification) => {
+        if (!notification.isRead) {
+            onMarkRead(notification._id);
+        }
+
+        onClose();
+
+        if (notification.type === 'workspace_invite' || notification.type === 'join_request') {
+            // Prioritize metadata link or default to settings
+            if (notification.link) {
+                navigate(notification.link);
+            } else {
+                navigate('/settings/workspace');
+            }
+        } else if (notification.link) {
+            navigate(notification.link);
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -58,16 +73,27 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
                                 </p>
                             </div>
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <X size={18} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                            {unreadCount > 0 && (
+                                <button
+                                    onClick={onMarkAllRead} // Uses the new prop
+                                    className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                                    title="Mark all as read"
+                                >
+                                    <CheckCheck size={18} />
+                                </button>
+                            )}
+                            <button
+                                onClick={onClose}
+                                className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Content */}
-                    <div className="overflow-y-auto custom-scrollbar flex-1 bg-white">
+                    <div className="overflow-y-auto custom-scrollbar flex-1 bg-white max-h-[350px]">
                         {notifications.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-[300px] text-gray-400">
                                 <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
@@ -82,10 +108,14 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
                                     <motion.div
                                         layout
                                         key={notification._id}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
                                         className={clsx(
-                                            "p-4 px-5 relative group transition-all duration-200 cursor-default",
+                                            "p-4 px-5 relative group transition-all duration-200 cursor-pointer",
                                             !notification.isRead ? "bg-blue-50/30" : "hover:bg-gray-50"
                                         )}
+                                        onClick={() => handleAction(notification)}
                                     >
                                         <div className="flex gap-4">
                                             {/* Icon/Avatar Placeholder */}
@@ -93,8 +123,9 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
                                                 "mt-1 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-black/5 overflow-hidden",
                                                 notification.type === 'task_assigned' ? 'bg-indigo-50 text-indigo-600' :
                                                     notification.type === 'system' ? 'bg-white p-1' :
-                                                        notification.type === 'task_updated' ? 'bg-amber-50 text-amber-600' :
-                                                            'bg-gray-100 text-gray-500'
+                                                        notification.type === 'success' ? 'bg-emerald-50 text-emerald-600' :
+                                                            notification.type === 'error' ? 'bg-rose-50 text-rose-600' :
+                                                                'bg-gray-100 text-gray-500'
                                             )}>
                                                 {notification.type === 'system' ? (
                                                     <img src="/logo.png" alt="Fluxo" className="w-full h-full object-contain" />
@@ -115,7 +146,7 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
                                                         <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5 ring-4 ring-blue-500/10"></span>
                                                     )}
                                                 </div>
-                                                <p className="text-sm text-gray-500 leading-snug mb-2.5 line-clamp-2 font-medium">
+                                                <p className="text-sm text-gray-500 leading-snug mb-2.5 break-words font-medium">
                                                     {notification.message}
                                                 </p>
                                                 <div className="flex items-center gap-3">
@@ -124,39 +155,14 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
                                                         {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                                                     </span>
                                                 </div>
-
-                                                {/* Action Link (if any) */}
-                                                {notification.link && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            navigate(notification.link);
-                                                            onClose();
-                                                        }}
-                                                        className="mt-3 w-full py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-lg transition-all shadow-md shadow-gray-200 flex items-center justify-center gap-1 group/btn"
-                                                    >
-                                                        View Details <ChevronRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
-                                                    </button>
-                                                )}
                                             </div>
 
                                             {/* Hover Actions */}
                                             <div className="absolute right-2 top-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100">
-                                                {!notification.isRead && (
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); onMarkRead(notification._id); }}
-                                                        className="p-1.5 bg-white text-gray-400 hover:text-emerald-500 rounded-lg shadow-sm border border-gray-100 hover:border-emerald-200 transition-colors"
-                                                        title="Mark as read"
-                                                    >
-                                                        <Check size={14} strokeWidth={3} />
-                                                    </button>
-                                                )}
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); onDismiss(notification._id); }}
                                                     className="p-1.5 bg-white text-gray-400 hover:text-rose-500 rounded-lg shadow-sm border border-gray-100 hover:border-rose-200 transition-colors"
-                                                    title="Dismiss"
+                                                    title="Remove notification"
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
@@ -175,7 +181,7 @@ const NotificationDropdown = ({ isOpen, onClose, notifications, unreadCount, onM
                                 onClick={onClearAll}
                                 className="text-[10px] font-black text-gray-400 hover:text-rose-500 uppercase tracking-[2px] transition-colors w-full py-1"
                             >
-                                Clear All
+                                Clear All Notifications
                             </button>
                         )}
                     </div>

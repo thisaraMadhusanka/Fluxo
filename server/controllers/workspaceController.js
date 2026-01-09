@@ -577,6 +577,30 @@ exports.acceptInvite = async (req, res) => {
         invitation.status = 'accepted';
         await invitation.save();
 
+        // Notify the user who joined
+        const { createNotification } = require('./notificationController');
+        await createNotification({
+            userId: req.user.id,
+            type: 'success',
+            title: 'Welcome to Workspace',
+            message: `You have successfully joined "${invitation.workspace.name}"`,
+            link: `/workspace/${invitation.workspace._id}`,
+            metadata: { workspaceId: invitation.workspace._id }
+        });
+
+        // Notify the workspace owner
+        const workspaceOwnerId = invitation.workspace.owner?._id || invitation.workspace.owner;
+        if (workspaceOwnerId && workspaceOwnerId.toString() !== req.user.id.toString()) {
+            await createNotification({
+                userId: workspaceOwnerId,
+                type: 'system',
+                title: 'New Member Joined',
+                message: `${req.user.name} has joined "${invitation.workspace.name}"`,
+                link: `/settings/workspace`,
+                metadata: { workspaceId: invitation.workspace._id, newMemberId: req.user.id }
+            });
+        }
+
         res.status(200).json({
             message: `Welcome to ${invitation.workspace.name}!`,
             workspace: invitation.workspace,

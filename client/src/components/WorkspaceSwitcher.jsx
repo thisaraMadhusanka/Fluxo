@@ -91,66 +91,82 @@ const WorkspaceSwitcher = () => {
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200 min-w-[280px]">
                     {/* Private Workspace Section */}
                     {workspaces.some(ws => ws.isPrivate) && (
-                        <div className="mb-2">
-                            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center">
-                                <Lock size={12} className="mr-1" /> My Workspace
+                        <div className="pt-3 pb-2">
+                            <div className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <Lock size={11} />
+                                My Workspace
                             </div>
-                            {workspaces.filter(ws => ws.isPrivate).map((ws) => (
-                                <button
-                                    key={ws._id}
-                                    onClick={() => handleSwitch(ws._id)}
-                                    className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors hover:bg-gray-50 ${currentWorkspace._id === ws._id ? 'text-orange-600 bg-orange-50' : 'text-gray-700'
-                                        }`}
-                                >
-                                    <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold mr-3 ${currentWorkspace._id === ws._id ? 'bg-orange-200 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
-                                        {ws.name.substring(0, 1).toUpperCase()}
-                                    </div>
-                                    <span className="flex-1 text-left truncate font-medium">{ws.name}</span>
-                                    {currentWorkspace._id === ws._id && <Check size={14} />}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Shared Workspaces Section */}
-                    {workspaces.some(ws => !ws.isPrivate) && (
-                        <div>
-                            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider border-t border-gray-100 mt-1 pt-2">
-                                Shared Workspaces
-                            </div>
-                            <div className="max-h-60 overflow-y-auto">
-                                {workspaces.filter(ws => !ws.isPrivate).map((ws) => (
+                            <div className="mt-1">
+                                {workspaces.filter(ws => ws.isPrivate).map((ws) => (
                                     <button
                                         key={ws._id}
                                         onClick={() => handleSwitch(ws._id)}
-                                        className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors hover:bg-gray-50 ${currentWorkspace._id === ws._id ? 'text-primary bg-primary/5' : 'text-gray-700'
+                                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${currentWorkspace._id === ws._id
+                                                ? 'bg-orange-50 text-orange-600'
+                                                : 'text-gray-700 hover:bg-gray-50'
                                             }`}
                                     >
-                                        <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-xs font-bold mr-3 text-gray-600">
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold ${currentWorkspace._id === ws._id
+                                                ? 'bg-orange-100 text-orange-600'
+                                                : 'bg-gray-100 text-gray-600'
+                                            }`}>
                                             {ws.name.substring(0, 1).toUpperCase()}
                                         </div>
-                                        <span className="flex-1 text-left truncate">{ws.name}</span>
-                                        {currentWorkspace._id === ws._id && <Check size={14} />}
+                                        <span className="flex-1 text-left font-medium">{ws.name}</span>
+                                        {currentWorkspace._id === ws._id && (
+                                            <Check size={16} className="text-orange-600" strokeWidth={2.5} />
+                                        )}
                                     </button>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    <div className="my-1 border-t border-gray-100" />
+                    {/* Shared Workspaces Section */}
+                    {workspaces.some(ws => !ws.isPrivate) && (
+                        <div className="pt-3 pb-2">
+                            <div className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                Shared Workspaces
+                            </div>
+                            <div className="mt-1 max-h-64 overflow-y-auto">
+                                {workspaces.filter(ws => !ws.isPrivate).map((ws) => (
+                                    <button
+                                        key={ws._id}
+                                        onClick={() => handleSwitch(ws._id)}
+                                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${currentWorkspace._id === ws._id
+                                                ? 'bg-orange-50 text-orange-600'
+                                                : 'text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold ${currentWorkspace._id === ws._id
+                                                ? 'bg-orange-100 text-orange-600'
+                                                : 'bg-gray-100 text-gray-600'
+                                            }`}>
+                                            {ws.name.substring(0, 1).toUpperCase()}
+                                        </div>
+                                        <span className="flex-1 text-left font-medium">{ws.name}</span>
+                                        {currentWorkspace._id === ws._id && (
+                                            <Check size={16} className="text-orange-600" strokeWidth={2.5} />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                    <div className="px-2 space-y-2">
+                    {/* Actions */}
+                    <div className="border-t border-gray-100 pt-2 pb-3 px-2 mt-2">
                         <button
                             onClick={() => {
                                 setIsModalOpen(true);
                                 setIsOpen(false);
                             }}
-                            className="w-full flex items-center px-2 py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
                         >
-                            <Plus size={16} className="mr-2" />
+                            <Plus size={16} className="text-gray-400" />
                             New Workspace
                         </button>
 
@@ -159,9 +175,9 @@ const WorkspaceSwitcher = () => {
                                 setIsJoinModalOpen(true);
                                 setIsOpen(false);
                             }}
-                            className="w-full flex items-center px-2 py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         >
-                            <LogIn size={16} className="mr-2" />
+                            <LogIn size={16} className="text-gray-400" />
                             Join Workspace
                         </button>
                     </div>

@@ -73,10 +73,14 @@ const Topbar = () => {
         dispatch(clearAllNotifications());
     };
 
+    const handleMarkAllRead = () => {
+        dispatch(markAllAsRead());
+    };
+
     const handleSearchResultClick = (task) => {
         setSearchQuery('');
         setShowSearchResults(false);
-        navigate(`/ tasks`);
+        navigate(`/projects/${task.project}/tasks`); // Fixed path
     };
 
     return (
@@ -151,28 +155,28 @@ const Topbar = () => {
                 <div className="relative">
                     <button
                         onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                        className={`relative p - 2 rounded - full transition - colors ${isNotificationOpen ? 'bg-primary/10 text-primary' : 'text-gray-500 hover:bg-gray-100'} ${unreadCount > 0 ? 'bell-shake' : ''} `}
+                        className={`relative p-2 rounded-full transition-colors ${isNotificationOpen ? 'bg-primary/10 text-primary' : 'text-gray-500 hover:bg-gray-100'} ${unreadCount > 0 ? 'bell-shake' : ''}`}
                     >
                         <Bell size={20} />
                         {unreadCount > 0 && (
                             <span className="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full border-2 border-white animate-pulse"></span>
                         )}
                         <style jsx>{`
-@keyframes bell - shake {
-    0 % { transform: rotate(0); }
-    15 % { transform: rotate(5deg); }
-    30 % { transform: rotate(-5deg); }
-    45 % { transform: rotate(4deg); }
-    60 % { transform: rotate(-4deg); }
-    75 % { transform: rotate(2deg); }
-    85 % { transform: rotate(-2deg); }
-    100 % { transform: rotate(0); }
-}
-                            .bell - shake {
-    animation: bell - shake 2s infinite;
-    transform - origin: top center;
-}
-`}</style>
+                            @keyframes bell-shake {
+                                0% { transform: rotate(0); }
+                                15% { transform: rotate(5deg); }
+                                30% { transform: rotate(-5deg); }
+                                45% { transform: rotate(4deg); }
+                                60% { transform: rotate(-4deg); }
+                                75% { transform: rotate(2deg); }
+                                85% { transform: rotate(-2deg); }
+                                100% { transform: rotate(0); }
+                            }
+                            .bell-shake {
+                                animation: bell-shake 2s infinite;
+                                transform-origin: top center;
+                            }
+                        `}</style>
                     </button>
                     <AnimatePresence>
                         {isNotificationOpen && (
@@ -184,6 +188,7 @@ const Topbar = () => {
                                 onMarkRead={handleMarkRead}
                                 onDismiss={handleDismiss}
                                 onClearAll={handleClearAll}
+                                onMarkAllRead={handleMarkAllRead}
                             />
                         )}
                     </AnimatePresence>
