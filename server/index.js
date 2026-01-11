@@ -2,11 +2,26 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const http = require('http');
+const path = require('path');
+const { Server } = require('socket.io');
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Initialize Socket.IO
+const io = new Server(server, {
+    cors: {
+        origin: ['https://fluxo-xi.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
+        credentials: true,
+        methods: ['GET', 'POST']
+    },
+    transports: ['websocket', 'polling'],
+    path: '/socket.io/'
+});
 
 // Middleware
 app.use(cors({
@@ -34,6 +49,14 @@ const workspaceRoutes = require('./routes/workspaceRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const accessRequestRoutes = require('./routes/accessRequestRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+
+// Socket.IO handler
+const { initializeSocket } = require('./socket/messageHandler');
+initializeSocket(io);
+
+// Make io accessible to routes
+app.set('io', io);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -44,8 +67,13 @@ app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/workspaces/:workspaceId/roles', roleRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/access-requests', accessRequestRoutes);
+app.use('/api', messageRoutes); // Message routes
 app.use('/api/landing', require('./routes/landingRoutes'));
+app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api', taskRoutes); // This route handles general task operations (Ensure this is AFTER specific routes to avoid middleware conflicts)
+
+// Serve static assets (images, files)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.get('/', (req, res) => {
     res.send('TaskFlow API is running');
@@ -61,7 +89,8 @@ module.exports = app;
 
 // Only listen if not running on Vercel (local development)
 if (process.env.NODE_ENV !== 'production') {
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
+        console.log('Socket.IO initialized');
     });
 }

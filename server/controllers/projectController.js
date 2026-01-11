@@ -134,7 +134,65 @@ exports.addMember = async (req, res) => {
             return res.status(400).json({ message: 'User already in project' });
         }
 
-        project.members.push({ user: userId, role: role || 'Member' });
+        // Set permissions based on role
+        const memberRole = role || 'Member';
+        let permissions = {
+            canEdit: false,
+            canDelete: false,
+            canManageMembers: false,
+            canViewOnly: true
+        };
+
+        switch (memberRole) {
+            case 'Owner':
+                permissions = {
+                    canEdit: true,
+                    canDelete: true,
+                    canManageMembers: true,
+                    canViewOnly: false
+                };
+                break;
+            case 'Leader':
+                permissions = {
+                    canEdit: true,
+                    canDelete: false,
+                    canManageMembers: true,
+                    canViewOnly: false
+                };
+                break;
+            case 'Developer':
+            case 'Designer':
+            case 'QA':
+                permissions = {
+                    canEdit: true,
+                    canDelete: false,
+                    canManageMembers: false,
+                    canViewOnly: false
+                };
+                break;
+            case 'Member':
+                permissions = {
+                    canEdit: false,
+                    canDelete: false,
+                    canManageMembers: false,
+                    canViewOnly: true
+                };
+                break;
+            case 'Viewer':
+                permissions = {
+                    canEdit: false,
+                    canDelete: false,
+                    canManageMembers: false,
+                    canViewOnly: true
+                };
+                break;
+        }
+
+        project.members.push({
+            user: userId,
+            role: memberRole,
+            permissions: permissions
+        });
         await project.save();
 
         await project.populate('members.user', 'name avatar email');
@@ -166,9 +224,67 @@ exports.addMember = async (req, res) => {
 exports.updateMemberRole = async (req, res) => {
     const { role } = req.body;
     try {
+        // Set permissions based on new role
+        let permissions = {
+            canEdit: false,
+            canDelete: false,
+            canManageMembers: false,
+            canViewOnly: true
+        };
+
+        switch (role) {
+            case 'Owner':
+                permissions = {
+                    canEdit: true,
+                    canDelete: true,
+                    canManageMembers: true,
+                    canViewOnly: false
+                };
+                break;
+            case 'Leader':
+                permissions = {
+                    canEdit: true,
+                    canDelete: false,
+                    canManageMembers: true,
+                    canViewOnly: false
+                };
+                break;
+            case 'Developer':
+            case 'Designer':
+            case 'QA':
+                permissions = {
+                    canEdit: true,
+                    canDelete: false,
+                    canManageMembers: false,
+                    canViewOnly: false
+                };
+                break;
+            case 'Member':
+                permissions = {
+                    canEdit: false,
+                    canDelete: false,
+                    canManageMembers: false,
+                    canViewOnly: true
+                };
+                break;
+            case 'Viewer':
+                permissions = {
+                    canEdit: false,
+                    canDelete: false,
+                    canManageMembers: false,
+                    canViewOnly: true
+                };
+                break;
+        }
+
         const project = await Project.findOneAndUpdate(
             { _id: req.params.id, "members.user": req.params.userId },
-            { $set: { "members.$.role": role } },
+            {
+                $set: {
+                    "members.$.role": role,
+                    "members.$.permissions": permissions
+                }
+            },
             { new: true }
         ).populate('members.user', 'name avatar email');
 

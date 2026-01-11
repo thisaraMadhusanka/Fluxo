@@ -211,24 +211,37 @@ const Projects = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex -space-x-2">
-                                                {(project.members || []).slice(0, 3).map((member, idx) => (
-                                                    <div
-                                                        key={member._id || idx}
-                                                        className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-600 shrink-0 overflow-hidden shadow-sm"
-                                                        title={member.user?.name || member.name}
-                                                    >
-                                                        {member.user?.avatar || member.avatar ? (
-                                                            <img src={member.user?.avatar || member.avatar} alt={member.user?.name || member.name} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            (member.user?.name || member.name || 'U')[0].toUpperCase()
-                                                        )}
-                                                    </div>
-                                                ))}
-                                                {(project.members?.length || 0) > 3 && (
-                                                    <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-50 flex items-center justify-center text-[10px] font-bold text-gray-500 shadow-sm shrink-0">
-                                                        +{project.members.length - 3}
-                                                    </div>
-                                                )}
+                                                {(() => {
+                                                    const validMembers = (project.members || []).filter(member => {
+                                                        const name = member.user?.name || member.name;
+                                                        return name && name !== 'U' && name.trim() !== '';
+                                                    });
+                                                    return (
+                                                        <>
+                                                            {validMembers.slice(0, 3).map((member, idx) => (
+                                                                <div
+                                                                    key={member._id || idx}
+                                                                    className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-600 shrink-0 overflow-hidden shadow-sm"
+                                                                    title={member.user?.name || member.name}
+                                                                >
+                                                                    {member.user?.avatar || member.avatar ? (
+                                                                        <img src={member.user?.avatar || member.avatar} alt={member.user?.name || member.name} className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        (member.user?.name || member.name || 'U')[0].toUpperCase()
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                            {validMembers.length > 3 && (
+                                                                <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-50 flex items-center justify-center text-[10px] font-bold text-gray-500 shadow-sm shrink-0">
+                                                                    +{validMembers.length - 3}
+                                                                </div>
+                                                            )}
+                                                            {validMembers.length === 0 && (
+                                                                <div className="text-xs text-gray-400 italic">No members</div>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 min-w-[150px]">

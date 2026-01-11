@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     LayoutDashboard, FolderKanban, CheckSquare, KanbanSquare,
-    Calendar, Clock, Files, Users, Settings, ChevronLeft, ChevronRight, LayoutTemplate
+    Calendar, Clock, Files, Users, Settings, ChevronLeft, ChevronRight, LayoutTemplate, MessageCircle
 } from 'lucide-react';
 import { toggleSidebar } from '@/store/slices/uiSlice';
 import { clsx } from 'clsx';
@@ -14,6 +14,7 @@ const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { name: 'Projects', icon: FolderKanban, path: '/projects' },
     { name: 'Tasks', icon: CheckSquare, path: '/tasks' },
+    { name: 'Messages', icon: MessageCircle, path: '/messages' },
     { name: 'Workspace', icon: Settings, path: '/settings/workspace' },
 ];
 
@@ -66,33 +67,6 @@ const Sidebar = () => {
                             </motion.div>
                         )}
                     </div>
-                    {/* Toggle Button - Desktop */}
-                    {window.innerWidth >= 768 && (
-                        <button
-                            onClick={() => dispatch(toggleSidebar())}
-                            className={`p-1.5 rounded-lg transition-all duration-300 group ${!sidebarOpen
-                                ? 'absolute -right-3 top-8 bg-[#1a1f2e] border border-gray-700 shadow-[0_0_10px_rgba(0,0,0,0.2)] text-gray-400 hover:text-white hover:border-orange-500/50'
-                                : 'hover:bg-gray-800 text-gray-500 hover:text-white'
-                                }`}
-                        >
-                            {/* Simple, cleaner chevron with animation */}
-                            {sidebarOpen ? (
-                                <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
-                            ) : (
-                                <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
-                            )}
-                        </button>
-                    )}
-
-                    {/* Mobile close button */}
-                    {(window.innerWidth < 768 && sidebarOpen) && (
-                        <button
-                            onClick={() => dispatch(toggleSidebar())}
-                            className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-500 hover:text-white transition-colors"
-                        >
-                            <ChevronLeft size={24} />
-                        </button>
-                    )}
                 </div>
 
                 {/* Workspace Switcher */}
@@ -164,8 +138,14 @@ const Sidebar = () => {
                         )}
                     </ul>
 
-                    {/* Bottom Section - Settings */}
-                    <div className="mt-auto px-2 pb-4">
+                    {/* Bottom Section - Account Settings & Support */}
+                    <div className="mt-auto px-2 pb-4 space-y-2">
+                        {(sidebarOpen || window.innerWidth < 768) && (
+                            <div className="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                Account
+                            </div>
+                        )}
+
                         <NavLink
                             to="/settings"
                             onClick={() => window.innerWidth < 768 && dispatch(toggleSidebar())}
@@ -188,7 +168,60 @@ const Sidebar = () => {
                                 </motion.span>
                             )}
                         </NavLink>
+
+                        <NavLink
+                            to="/help"
+                            onClick={() => window.innerWidth < 768 && dispatch(toggleSidebar())}
+                            className={({ isActive }) => clsx(
+                                "flex items-center px-4 py-3 rounded-lg transition-all duration-200 group relative overflow-hidden whitespace-nowrap",
+                                !sidebarOpen && window.innerWidth >= 768 ? "justify-center px-2" : "",
+                                isActive ? "bg-primary text-white shadow-lg" : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                            )}
+                            title={!sidebarOpen && window.innerWidth >= 768 ? 'Help & Support' : ''}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="min-w-[20px]">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                                <path d="M12 17h.01" />
+                            </svg>
+                            {(sidebarOpen || window.innerWidth < 768) && (
+                                <motion.span
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="ml-3 font-medium"
+                                >
+                                    Help & Support
+                                </motion.span>
+                            )}
+                        </NavLink>
+
+                        {(sidebarOpen || window.innerWidth < 768) && (
+                            <button
+                                onClick={() => dispatch(toggleSidebar())}
+                                className="w-full flex items-center px-4 py-2.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all duration-200"
+                            >
+                                <ChevronLeft size={18} className="min-w-[18px]" />
+                                <span className="ml-3 font-medium text-sm">Hide</span>
+                            </button>
+                        )}
                     </div>
+
+                    {/* Unhide Button - Bottom of Collapsed Sidebar (Desktop Only) */}
+                    {!sidebarOpen && window.innerWidth >= 768 && (
+                        <div className="px-2 pb-4">
+                            <button
+                                onClick={() => dispatch(toggleSidebar())}
+                                className="w-full py-3 px-2 bg-primary/10 hover:bg-primary/20 rounded-lg text-primary hover:text-primary transition-all duration-200 flex items-center justify-center group border border-primary/20"
+                                title="Show Sidebar"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-0.5 transition-transform">
+                                    <polyline points="9 18 15 12 9 6" />
+                                    <polyline points="15 18 21 12 15 6" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
                 </nav>
             </motion.aside>
         </>

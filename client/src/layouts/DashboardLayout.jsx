@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar'; // Removed TimeTracker
 import ProfileDropdown from '@/components/ProfileDropdown';
 import { Menu, Bell, Search } from 'lucide-react'; // Removed UserIcon
@@ -7,12 +7,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleSidebar } from '@/store/slices/uiSlice';
 import { fetchWorkspaces } from '@/store/slices/workspaceSlice';
 import NotificationDropdown from '@/components/NotificationDropdown';
-import { fetchNotifications, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications } from '@/store/slices/notificationSlice';
+import { fetchNotifications, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications, addNotification } from '@/store/slices/notificationSlice';
+import socketService from '@/services/socket';
+import { useToast } from '@/components/Toast';
 
 const DashboardLayout = ({ children }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { sidebarOpen } = useSelector((state) => state.ui);
     const { user } = useSelector((state) => state.auth);
+    const toast = useToast();
 
     // Notification State
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -23,13 +27,55 @@ const DashboardLayout = ({ children }) => {
         // Initial fetch
         dispatch(fetchNotifications({ limit: 10 }));
 
-        // Polling every 60 seconds
+        // Socket Listeners for Notifications
+        // Wait for socket to be ready, then add listener
+        const checkAndSetupListener = () => {
+            if (socketService.socket) {
+                console.log('📡 Setting up notification listener');
+
+                socketService.socket.on('notification:new', (data) => {
+                    console.log('🔔 New notification received:', data);
+
+                    // Show toast (title, message format)
+                    toast.message(`${data.title} ${data.message}`, 'New Message', 8000);
+
+                    // Add to Redux store directly for immediate UI update
+                    dispatch(addNotification({
+                        _id: Date.now().toString(),
+                        title: data.title,
+                        message: data.message,
+                        type: 'message',
+                        isRead: false,
+                        createdAt: new Date().toISOString(),
+                        link: `/messages/${data.conversationId}`, // Ensure link works
+                        ...data
+                    }));
+
+                    // Removed fetchNotifications to prevent overwriting with stale server data
+                    // dispatch(fetchNotifications({ limit: 10 }));
+                });
+            } else {
+                // Retry after delay
+                console.log('⏳ Waiting for socket connection...');
+                setTimeout(checkAndSetupListener, 500);
+            }
+        };
+
+        // Start checking for socket
+        checkAndSetupListener();
+
+        // Polling every 60 seconds as backup
         const interval = setInterval(() => {
             dispatch(fetchNotifications({ limit: 10 }));
         }, 60000);
 
-        return () => clearInterval(interval);
-    }, [dispatch]);
+        return () => {
+            clearInterval(interval);
+            if (socketService.socket) {
+                socketService.socket.off('notification:new');
+            }
+        };
+    }, [dispatch, toast]);
 
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -77,6 +123,7 @@ const DashboardLayout = ({ children }) => {
                                 notifications={notifications}
                                 unreadCount={unreadCount}
                                 onMarkRead={(id) => dispatch(markAsRead(id))}
+                                onMarkAllRead={() => dispatch(markAllAsRead())}
                                 onDismiss={(id) => dispatch(deleteNotification(id))}
                                 onClearAll={() => dispatch(clearAllNotifications())}
                             />

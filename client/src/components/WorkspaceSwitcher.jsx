@@ -91,7 +91,7 @@ const WorkspaceSwitcher = () => {
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200 w-[220px]">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 w-[220px]">
                     {/* Private Workspace Section */}
                     {workspaces.some(ws => ws.isPrivate) && (
                         <div className="py-2">

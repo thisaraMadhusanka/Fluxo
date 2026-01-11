@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
     },
     bio: {
         type: String,
-        default: ''
+        default: 'Fluxo project management team member'
     }
 }, { timestamps: true });
 

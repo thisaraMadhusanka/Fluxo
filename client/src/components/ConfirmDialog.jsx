@@ -59,7 +59,7 @@ const ConfirmDialog = ({
                     initial={{ scale: 0.95, opacity: 0, y: 10 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                    className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+                    className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
                 >
                     <div className="p-8 pb-6 text-center">
                         <div className="flex justify-center mb-5">
@@ -74,13 +74,13 @@ const ConfirmDialog = ({
                     <div className="px-8 pb-8 flex space-x-3">
                         <button
                             onClick={onClose}
-                            className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 font-bold text-sm transition-all"
+                            className="flex-1 px-6 py-3.5 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 font-bold text-sm transition-all"
                         >
                             {cancelText}
                         </button>
                         <button
                             onClick={() => { onConfirm(); onClose(); }}
-                            className={`flex-1 px-4 py-3 rounded-xl text-white font-bold text-sm shadow-lg shadow-gray-200 transition-all active:scale-95 ${colors.btnBg}`}
+                            className={`flex-1 px-6 py-3.5 rounded-xl text-white font-bold text-sm shadow-lg shadow-gray-200 transition-all active:scale-95 ${colors.btnBg}`}
                         >
                             {confirmText}
                         </button>

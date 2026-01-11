@@ -116,7 +116,7 @@ const TableView = ({ tasks = [], onTaskClick, onAddTaskClick, project }) => {
 
             <div className="overflow-x-auto flex-1">
                 <table className="w-full text-left border-collapse">
-                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold tracking-wider sticky top-0 z-10 shadow-sm">
+                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold tracking-wider sticky top-0 z-[5] shadow-sm">
                         <tr>
                             {visibleColumns.name && <th className="px-6 py-4 border-b border-gray-100 w-1/3 min-w-[300px]">Task Name</th>}
                             {visibleColumns.role && <th className="px-6 py-4 border-b border-gray-100 w-32">Role</th>}
@@ -203,7 +203,7 @@ const TableView = ({ tasks = [], onTaskClick, onAddTaskClick, project }) => {
 
                                 {visibleColumns.status && (
                                     <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide inline-block ${task.status === 'Done' ? 'bg-emerald-100 text-emerald-700' :
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide inline-block ${task.status === 'Done' ? 'bg-emerald-100 text-emerald-700' :
                                             task.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
                                                 task.status === 'In Review' ? 'bg-purple-100 text-purple-700' :
                                                     'bg-gray-100 text-gray-600'
@@ -226,23 +226,29 @@ const TableView = ({ tasks = [], onTaskClick, onAddTaskClick, project }) => {
 
                                 {visibleColumns.assignees && (
                                     <td className="px-6 py-4">
-                                        <div className="flex -space-x-2 overflow-hidden hover:space-x-1 transition-all py-1">
+                                        <div className="flex -space-x-2 hover:space-x-1 transition-all duration-300 py-1">
                                             {task.assignees?.filter(a => a).map((a, i) => (
-                                                <div key={i} className="group/avatar relative flex-shrink-0 cursor-help">
-                                                    <div className="w-8 h-8 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center overflow-hidden ring-1 ring-gray-100">
+                                                <div key={i} className="group/avatar relative flex-shrink-0 cursor-help transition-transform duration-300 hover:scale-110 hover:z-10">
+                                                    <div className="w-8 h-8 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center overflow-hidden ring-1 ring-gray-100 group-hover/avatar:ring-2 group-hover/avatar:ring-primary/30 transition-all duration-300">
                                                         {a.avatar ? (
                                                             <img src={a.avatar} alt={a.name} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <span className="text-xs font-bold text-gray-600">{a.name?.[0]}</span>
                                                         )}
                                                     </div>
-                                                    {/* Rich Tooltip */}
-                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/avatar:block bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap z-20 shadow-xl">
-                                                        <div className="font-bold">{a.name}</div>
-                                                        <div className="text-gray-400 text-[10px] uppercase tracking-wide mt-0.5">{getMemberRole(a._id)}</div>
-                                                        <div className="text-gray-500 text-[10px] lowercase">{a.email}</div>
+                                                    {/* Minimal Clean Tooltip */}
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/avatar:block bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden min-w-[180px]">
+                                                        <div className="px-3 py-2.5 text-center">
+                                                            <div className="font-bold text-gray-900 text-sm">{a.name}</div>
+                                                            <div className="text-gray-500 text-xs mt-0.5">{a.email}</div>
+                                                            <div className="mt-1.5">
+                                                                <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-semibold uppercase tracking-wide">
+                                                                    {getMemberRole(a._id)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                         {/* Triangle */}
-                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-white"></div>
                                                     </div>
                                                 </div>
                                             ))}

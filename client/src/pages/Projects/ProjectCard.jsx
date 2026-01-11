@@ -34,6 +34,14 @@ const ProjectCard = ({ project, onEdit, onArchive, onDelete }) => {
         },
     ];
 
+    // Filter to show only valid project members (exclude entries without proper user data)
+    const validMembers = (project.members || []).filter(member => {
+        const name = member.user?.name || member.name;
+        const avatar = member.user?.avatar || member.avatar;
+        // Only include members with valid name or avatar
+        return name && name !== 'U' && name.trim() !== '';
+    });
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -94,7 +102,7 @@ const ProjectCard = ({ project, onEdit, onArchive, onDelete }) => {
 
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex -space-x-2">
-                        {(project.members || []).slice(0, 4).map((member, idx) => (
+                        {validMembers.slice(0, 4).map((member, idx) => (
                             <div
                                 key={member._id || idx}
                                 className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-600 shrink-0 overflow-hidden shadow-sm"
@@ -107,15 +115,13 @@ const ProjectCard = ({ project, onEdit, onArchive, onDelete }) => {
                                 )}
                             </div>
                         ))}
-                        {(project.members?.length || 0) > 4 && (
+                        {validMembers.length > 4 && (
                             <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-50 flex items-center justify-center text-[10px] font-bold text-gray-500 shadow-sm shrink-0">
-                                +{project.members.length - 4}
+                                +{validMembers.length - 4}
                             </div>
                         )}
-                        {(project.members?.length || 0) === 0 && (
-                            <div className="w-8 h-8 rounded-full border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-gray-400">
-                                <Users size={12} />
-                            </div>
+                        {validMembers.length === 0 && (
+                            <div className="text-xs text-gray-400 italic">No members</div>
                         )}
                     </div>
 

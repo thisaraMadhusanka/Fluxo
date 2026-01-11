@@ -7,6 +7,7 @@ import userReducer from './slices/userSlice';
 import notificationReducer from './slices/notificationSlice';
 import workspaceReducer from './slices/workspaceSlice';
 import roleReducer from './slices/roleSlice';
+import messagesReducer from './slices/messagesSlice';
 
 export const store = configureStore({
     reducer: {
@@ -18,5 +19,6 @@ export const store = configureStore({
         notifications: notificationReducer,
         workspaces: workspaceReducer,
         roles: roleReducer,
+        messages: messagesReducer,
     },
 });
