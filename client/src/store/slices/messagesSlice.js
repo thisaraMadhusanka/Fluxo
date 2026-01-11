@@ -16,11 +16,14 @@ const messagesSlice = createSlice({
     initialState,
     reducers: {
         setConversations: (state, action) => {
-            state.conversations = action.payload;
+            // Defensive check: ensure action.payload is an array
+            state.conversations = Array.isArray(action.payload) ? action.payload : [];
             // Update unread counts
-            action.payload.forEach(conv => {
-                state.unreadCounts[conv._id] = conv.unreadCount || 0;
-            });
+            if (Array.isArray(state.conversations)) {
+                state.conversations.forEach(conv => {
+                    state.unreadCounts[conv._id] = conv.unreadCount || 0;
+                });
+            }
         },
         setActiveConversation: (state, action) => {
             state.activeConversation = action.payload;
@@ -74,7 +77,9 @@ const messagesSlice = createSlice({
             }
         },
         removeOnlineUser: (state, action) => {
-            state.onlineUsers = state.onlineUsers.filter(id => id !== action.payload);
+            if (Array.isArray(state.onlineUsers)) {
+                state.onlineUsers = state.onlineUsers.filter(id => id !== action.payload);
+            }
         },
         setTyping: (state, action) => {
             const { conversationId, userId, isTyping } = action.payload;
@@ -87,7 +92,9 @@ const messagesSlice = createSlice({
                     state.typingUsers[conversationId].push(userId);
                 }
             } else {
-                state.typingUsers[conversationId] = state.typingUsers[conversationId].filter(id => id !== userId);
+                if (Array.isArray(state.typingUsers[conversationId])) {
+                    state.typingUsers[conversationId] = state.typingUsers[conversationId].filter(id => id !== userId);
+                }
             }
         },
         updateReaction: (state, action) => {
@@ -141,7 +148,9 @@ const messagesSlice = createSlice({
         removeConversation: (state, action) => {
             const conversationId = action.payload;
             // Remove from conversations list
-            state.conversations = state.conversations.filter(c => c._id !== conversationId);
+            if (Array.isArray(state.conversations)) {
+                state.conversations = state.conversations.filter(c => c._id !== conversationId);
+            }
             // Clear messages for this conversation
             delete state.messages[conversationId];
             // Clear unread count

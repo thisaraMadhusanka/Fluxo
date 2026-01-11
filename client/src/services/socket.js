@@ -58,7 +58,7 @@ class SocketService {
         });
 
         this.socket.on('connect_error', (error) => {
-            console.error('❌ Socket connection error:', error.message);
+            console.warn('⚠️ Socket connection error (expected on Vercel/Serverless):', error.message);
         });
 
         // Message events
