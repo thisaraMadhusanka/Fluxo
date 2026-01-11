@@ -116,21 +116,27 @@ const workspaceSlice = createSlice({
         });
         builder.addCase(fetchWorkspaces.fulfilled, (state, action) => {
             state.loading = false;
-            state.workspaces = action.payload;
+            // Defensive check: ensure workspaces is an array
+            state.workspaces = Array.isArray(action.payload) ? action.payload : [];
             // If no current workspace, set first one
-            if (!state.currentWorkspace && action.payload.length > 0) {
-                state.currentWorkspace = action.payload[0];
-                localStorage.setItem('currentWorkspace', JSON.stringify(action.payload[0]));
+            if (!state.currentWorkspace && state.workspaces.length > 0) {
+                state.currentWorkspace = state.workspaces[0];
+                localStorage.setItem('currentWorkspace', JSON.stringify(state.workspaces[0]));
             }
         });
         builder.addCase(fetchWorkspaces.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload;
+            // Keep existing workspaces instead of clearing 
+            console.error('Failed to fetch workspaces:', action.payload);
         });
 
         // Delete Workspace
         builder.addCase(deleteWorkspace.fulfilled, (state, action) => {
-            state.workspaces = state.workspaces.filter(w => w._id !== action.payload);
+            // Defensive check before filter
+            if (Array.isArray(state.workspaces)) {
+                state.workspaces = state.workspaces.filter(w => w._id !== action.payload);
+            }
 
             // If deleted workspace was active, switch to another
             if (state.currentWorkspace?._id === action.payload) {
