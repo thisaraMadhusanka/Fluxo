@@ -92,12 +92,17 @@ const notificationSlice = createSlice({
         });
         builder.addCase(fetchNotifications.fulfilled, (state, action) => {
             state.loading = false;
-            state.notifications = action.payload.notifications;
-            state.unreadCount = action.payload.unreadCount;
+            // Defensive check: ensure notifications is an array
+            state.notifications = Array.isArray(action.payload?.notifications)
+                ? action.payload.notifications
+                : [];
+            state.unreadCount = action.payload?.unreadCount || 0;
         });
         builder.addCase(fetchNotifications.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload;
+            // Keep existing notifications instead of clearing
+            console.error('Failed to fetch notifications:', action.payload);
         });
 
         // Mark as read
@@ -111,13 +116,19 @@ const notificationSlice = createSlice({
 
         // Mark all as read
         builder.addCase(markAllAsRead.fulfilled, (state) => {
-            state.notifications = state.notifications.map(n => ({ ...n, isRead: true }));
+            // Defensive check before .map()
+            if (Array.isArray(state.notifications)) {
+                state.notifications = state.notifications.map(n => ({ ...n, isRead: true }));
+            }
             state.unreadCount = 0;
         });
 
         // Delete notification
         builder.addCase(deleteNotification.fulfilled, (state, action) => {
-            state.notifications = state.notifications.filter(n => n._id !== action.payload);
+            // Defensive check before .filter()
+            if (Array.isArray(state.notifications)) {
+                state.notifications = state.notifications.filter(n => n._id !== action.payload);
+            }
             // Recalculate unread count if we deleted an unread one
             // Ideally backend returns count, but we can approximate or refetch
         });
