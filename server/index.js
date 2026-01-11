@@ -79,6 +79,14 @@ app.get('/', (req, res) => {
     res.send('TaskFlow API is running');
 });
 
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        dbState: mongoose.networkState || mongoose.connection.readyState, // 0: disconnected, 1: connected, 2: connecting, 3: disconnecting
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB Connected'))
