@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsers, updateUserRole, approveUser, deleteUser } from '@/store/slices/userSlice';
+import { fetchAllSystemUsers, updateUserRole, approveUser, deleteUser } from '@/store/slices/userSlice';
 import { Trash2, Shield, CheckCircle, XCircle, UserCheck, Mail, CheckSquare, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -10,7 +10,8 @@ import { useToast } from '@/components/Toast';
 const AdminDashboard = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { users, loading } = useSelector((state) => state.users);
+    // Use adminUsers instead of scoped users
+    const { adminUsers: users, loading } = useSelector((state) => state.users);
     const { user: currentUser } = useSelector((state) => state.auth);
     const [activeTab, setActiveTab] = useState('users'); // 'users' | 'access-requests'
     const [accessRequests, setAccessRequests] = useState([]);
@@ -31,7 +32,7 @@ const AdminDashboard = () => {
             navigate('/');
             return;
         }
-        dispatch(fetchUsers());
+        dispatch(fetchAllSystemUsers());
     }, [dispatch, currentUser, navigate]);
 
     useEffect(() => {

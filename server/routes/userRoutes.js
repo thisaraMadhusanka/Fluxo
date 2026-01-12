@@ -11,7 +11,8 @@ const {
     deleteUser,
     getUserStats,
     leaveProject,
-    leaveWorkspace
+    leaveWorkspace,
+    getAllUsersAdmin
 } = require('../controllers/userController');
 const { protect, owner } = require('../middleware/authMiddleware');
 
@@ -26,6 +27,7 @@ router.post('/leave-workspace/:id', protect, leaveWorkspace);
 
 // Admin routes (Note: GET / now allows all authenticated users for messaging)
 router.get('/', protect, getUsers); // Changed from owner-only to allow workspace member listing
+router.get('/admin/all', protect, owner, getAllUsersAdmin); // New: Global Admin View
 router.put('/:id/role', protect, owner, updateUserRole);
 router.put('/:id/approve', protect, owner, approveUser);
 router.delete('/:id', protect, owner, deleteUser);

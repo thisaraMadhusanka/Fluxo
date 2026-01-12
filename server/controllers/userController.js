@@ -369,8 +369,27 @@ const leaveWorkspace = async (req, res) => {
     }
 };
 
+// @desc    Get ALL users (System Admin) - Bypasses workspace scope
+// @route   GET /api/users/admin/all
+// @access  Private/Owner
+const getAllUsersAdmin = async (req, res) => {
+    try {
+        const User = require('../models/User');
+        // Fetch ALL users in the system, sorted by newest
+        const users = await User.find({})
+            .select('-password')
+            .sort({ createdAt: -1 });
+
+        res.json(users);
+    } catch (error) {
+        console.error('Get All Users Admin Error:', error);
+        res.status(500).json({ message: 'Server Error fetching all users' });
+    }
+};
+
 module.exports = {
     getUsers,
+    getAllUsersAdmin, // <--- New export
     updateProfile,
     updatePassword,
     deleteOwnAccount,
