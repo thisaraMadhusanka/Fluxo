@@ -24,8 +24,8 @@ router.get('/stats', protect, getUserStats);
 router.post('/leave-project/:id', protect, leaveProject);
 router.post('/leave-workspace/:id', protect, leaveWorkspace);
 
-// Admin routes
-router.get('/', protect, owner, getUsers);
+// Admin routes (Note: GET / now allows all authenticated users for messaging)
+router.get('/', protect, getUsers); // Changed from owner-only to allow workspace member listing
 router.put('/:id/role', protect, owner, updateUserRole);
 router.put('/:id/approve', protect, owner, approveUser);
 router.delete('/:id', protect, owner, deleteUser);

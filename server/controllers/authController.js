@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const bcrypt = require('bcryptjs');
+const { sendRegistrationNotification } = require('../services/emailService');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -26,6 +27,7 @@ exports.registerUser = async (req, res) => {
 
         // Check for specific owner email
         const isOwner = email === 'thisarasanka4@gmail.com';
+
 
         // Create user
         const user = await User.create({
@@ -55,19 +57,20 @@ exports.registerUser = async (req, res) => {
                 });
             }
 
-            // Note: We're not generating a token here because they aren't approved yet.
-            // Or we can generate it but they can't use it?
-            // Better behavior: Check isApproved in login.
-            // Here, we can just return success but maybe with a flag.
+            // Return success WITHOUT token - user must wait for approval
+            return res.status(201).json({
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    isApproved: false
+                },
+                message: 'Registration successful. Please wait for admin approval to access your account. You will receive an email once approved.'
+            });
         }
 
-        // If not approved, we shouldn't really log them in. 
-        // But for simplicity in frontend handling, strict security happens at login/protect middleware.
-        // However, standard flow: Register -> Pending.
-
-        // Auto-create private workspace for the user
+        // Owner gets auto-approved and workspace created
         await ensurePrivateWorkspace(user);
-
         const token = generateToken(user._id);
 
         res.status(201).json({
@@ -83,7 +86,7 @@ exports.registerUser = async (req, res) => {
                 privateWorkspaceId: user.privateWorkspaceId
             },
             token,
-            message: isOwner ? 'Registration successful' : 'Registration successful. Account pending approval.'
+            message: 'Registration successful'
         });
     } catch (error) {
         console.error(error);

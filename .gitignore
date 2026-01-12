@@ -32,3 +32,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Google Drive sync folders
+.tmp.drivedownload/
+.tmp.driveupload/
+
+# uploads
+uploads/
