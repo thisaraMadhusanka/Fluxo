@@ -11,7 +11,6 @@ import ComingSoon from '@/pages/ComingSoon';
 import AdminDashboard from '@/pages/Admin/AdminDashboard';
 import ProfileSettings from '@/pages/Settings/ProfileSettings';
 import WorkspaceSettings from '@/pages/Settings/WorkspaceSettings';
-import HelpSupport from '@/pages/Help/HelpSupport';
 import AcceptInvite from '@/pages/AcceptInvite';
 import Landing from '@/pages/Landing/Landing';
 import Features from '@/pages/Landing/Features';
@@ -61,9 +60,6 @@ const App = () => {
                     {/* Settings */}
                     <Route path="/settings" element={<PrivateRoute><DashboardLayout><ProfileSettings /></DashboardLayout></PrivateRoute>} />
                     <Route path="/settings/workspace" element={<PrivateRoute><DashboardLayout><WorkspaceSettings /></DashboardLayout></PrivateRoute>} />
-
-                    {/* Help & Support */}
-                    <Route path="/help" element={<PrivateRoute><DashboardLayout><HelpSupport /></DashboardLayout></PrivateRoute>} />
 
                     {/* Messages */}
                     <Route path="/messages" element={<PrivateRoute><DashboardLayout><MessagingLayout /></DashboardLayout></PrivateRoute>} />
