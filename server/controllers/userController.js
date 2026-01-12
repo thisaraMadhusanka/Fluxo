@@ -4,9 +4,33 @@ const bcrypt = require('bcryptjs');
 // @desc    Get all users
 // @route   GET /api/users
 // @access  Private/Owner
+// @desc    Get all users (Scoped to Workspace if provided)
+// @route   GET /api/users
+// @access  Private
 const getUsers = async (req, res) => {
     try {
-        const users = await User.find({}).select('-password');
+        const workspaceId = req.headers['x-workspace-id'];
+
+        if (workspaceId) {
+            const Member = require('../models/Member');
+            // Fetch members of the workspace
+            const members = await Member.find({ workspace: workspaceId })
+                .populate('user', 'name email avatar position bio role isApproved');
+
+            // map to user objects
+            const users = members
+                .filter(m => m.user) // Filter out broken references
+                .map(m => m.user);
+
+            return res.json(users);
+        }
+
+        // Fallback for non-workspace context (e.g. Admin Dashboard) - WITH PAGINATION
+        // Or limiting to avoid crash
+        const users = await User.find({})
+            .select('-password')
+            .limit(100); // Safety limit
+
         res.json(users);
     } catch (error) {
         console.error(error);
