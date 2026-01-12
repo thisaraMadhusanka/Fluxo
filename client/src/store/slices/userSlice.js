@@ -8,7 +8,57 @@ const initialState = {
     error: null,
 };
 
-// ... (existing thunks) ...
+// Invite new user
+export const inviteUser = createAsyncThunk(
+    'users/invite',
+    async (userData, { rejectWithValue }) => {
+        try {
+            const { data } = await api.post('/users/invite', userData);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to invite user');
+        }
+    }
+);
+
+// Update user role
+export const updateUserRole = createAsyncThunk(
+    'users/updateRole',
+    async ({ id, role }, { rejectWithValue }) => {
+        try {
+            const { data } = await api.put(`/users/${id}/role`, { role });
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to update user role');
+        }
+    }
+);
+
+// Approve user
+export const approveUser = createAsyncThunk(
+    'users/approve',
+    async (id, { rejectWithValue }) => {
+        try {
+            const { data } = await api.put(`/users/${id}/approve`);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to approve user');
+        }
+    }
+);
+
+// Delete user
+export const deleteUser = createAsyncThunk(
+    'users/delete',
+    async (id, { rejectWithValue }) => {
+        try {
+            await api.delete(`/users/${id}`);
+            return id;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to delete user');
+        }
+    }
+);
 
 // Fetch all users (Workspace Scoped)
 export const fetchUsers = createAsyncThunk(
