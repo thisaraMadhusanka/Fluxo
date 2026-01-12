@@ -10,16 +10,20 @@ exports.canEditProject = async (req, res, next) => {
             return res.status(404).json({ message: 'Project not found' });
         }
 
-        // Owner always has full access
-        if (project.owner.toString() === req.user.id) {
+        // Owner always has full access - Defensive check for owner existence
+        if (project.owner && project.owner.toString() === req.user.id) {
             req.project = project;
             return next();
         }
 
         // Check if user is a member with edit permissions
-        const member = project.members.find(
-            m => (m.user?._id || m.user).toString() === req.user.id
-        );
+        // Defensive: Handl potential missing/malformed member objects
+        const member = (project.members || []).find(m => {
+            if (!m.user) return false;
+            // Handle both populated and unpopulated cases
+            const memberId = m.user._id ? m.user._id.toString() : m.user.toString();
+            return memberId === req.user.id;
+        });
 
         if (!member) {
             return res.status(403).json({
