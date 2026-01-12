@@ -18,24 +18,9 @@ import PrivacyPolicy from '@/pages/Landing/PrivacyPolicy';
 import TermsConditions from '@/pages/Landing/TermsConditions';
 import { ToastProvider } from '@/components/Toast';
 import { useSelector } from 'react-redux';
-import { useEffect } from 'react';
-import socketService from '@/services/socket';
 
 const App = () => {
     const { isAuthenticated, token } = useSelector((state) => state.auth);
-
-    // Connect socket globally when user is authenticated
-    useEffect(() => {
-        if (isAuthenticated && token) {
-            console.log('🌐 Connecting socket globally from App.jsx');
-            socketService.connect(token);
-        }
-
-        return () => {
-            // Don't disconnect here as it will disconnect when navigating
-            // Socket will be managed by individual pages
-        };
-    }, [isAuthenticated, token]);
 
     return (
         <ToastProvider>
