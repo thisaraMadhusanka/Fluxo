@@ -20,6 +20,18 @@ class SocketService {
     }
 
     connect(token) {
+        // Disable Socket.IO on production/Vercel (doesn't support WebSockets)
+        const isProduction = import.meta.env.PROD;
+        const API_URL_DOMAIN = import.meta.env.VITE_API_URL || '';
+        const isVercel = API_URL_DOMAIN.includes('vercel.app');
+
+        if (isProduction && isVercel) {
+            console.log('ℹ️ Socket.IO disabled on Vercel (WebSocket not supported on serverless)');
+            console.log('💡 Messaging features are not available in this deployment');
+            this.isConnected = false;
+            return;
+        }
+
         if (this.socket) {
             this.disconnect();
         }
