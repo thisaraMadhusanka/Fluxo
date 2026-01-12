@@ -15,12 +15,25 @@ const getUsers = async (req, res) => {
             const Member = require('../models/Member');
             // Fetch members of the workspace
             const members = await Member.find({ workspace: workspaceId })
-                .populate('user', 'name email avatar position bio role isApproved');
+                .populate('user', 'name email avatar position bio role isApproved')
+                .populate('role', 'name'); // Populate Role for sorting
 
-            // map to user objects
+            // map to user objects and SORT (Owner first)
             const users = members
                 .filter(m => m.user) // Filter out broken references
-                .map(m => m.user);
+                .sort((a, b) => {
+                    const roleA = a.role?.name || '';
+                    const roleB = b.role?.name || '';
+                    if (roleA === 'Owner') return -1;
+                    if (roleB === 'Owner') return 1;
+                    return 0;
+                })
+                .map(m => {
+                    // Attach workspace role to user object for frontend usage if needed
+                    const userObj = m.user.toObject();
+                    userObj.workspaceRole = m.role?.name;
+                    return userObj;
+                });
 
             return res.json(users);
         }

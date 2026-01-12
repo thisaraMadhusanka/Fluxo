@@ -10,6 +10,19 @@ const initialState = {
 
 // ... (existing thunks) ...
 
+// Fetch all users (Workspace Scoped)
+export const fetchUsers = createAsyncThunk(
+    'users/fetchAll',
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get('/users');
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');
+        }
+    }
+);
+
 // Fetch ALL users (Admin)
 export const fetchAllSystemUsers = createAsyncThunk(
     'users/fetchAllSystem',
