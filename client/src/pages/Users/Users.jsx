@@ -22,7 +22,7 @@ const Users = () => {
         }
     };
 
-    const filteredUsers = users.filter(user =>
+    const filteredUsers = (Array.isArray(users) ? users : []).filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );

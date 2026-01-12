@@ -151,7 +151,7 @@ const Projects = () => {
                 </div>
             ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map((project) => (
+                    {(Array.isArray(projects) ? projects : []).map((project) => (
                         <div key={project._id} className="cursor-pointer block relative">
                             <Link to={`/projects/${project._id}`}>
                                 <ProjectCard
@@ -182,7 +182,7 @@ const Projects = () => {
                                 </tr >
                             </thead >
                             <tbody className="divide-y divide-gray-100">
-                                {projects.map((project) => (
+                                {(Array.isArray(projects) ? projects : []).map((project) => (
                                     <tr key={project._id} className="hover:bg-gray-50/50 transition-colors group">
                                         <td className="px-6 py-4">
                                             <Link to={`/projects/${project._id}`} className="flex items-center group">

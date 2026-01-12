@@ -88,7 +88,8 @@ const userSlice = createSlice({
         });
         builder.addCase(fetchUsers.fulfilled, (state, action) => {
             state.loading = false;
-            state.users = action.payload;
+            // Defensive: Ensure users is always an array
+            state.users = Array.isArray(action.payload) ? action.payload : [];
         });
         builder.addCase(fetchUsers.rejected, (state, action) => {
             state.loading = false;
