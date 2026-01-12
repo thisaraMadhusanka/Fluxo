@@ -201,7 +201,7 @@ const MessageList = ({ messages, conversationId }) => {
                                         )}
 
                                         {/* Attachments */}
-                                        {message.attachments?.map((attachment, i) => (
+                                        {(Array.isArray(message.attachments) ? message.attachments : []).map((attachment, i) => (
                                             <div key={i} className="mb-2">
                                                 {attachment.type?.startsWith('image/') ? (
                                                     <img
