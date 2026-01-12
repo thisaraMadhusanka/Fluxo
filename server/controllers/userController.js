@@ -30,7 +30,7 @@ const getUsers = async (req, res) => {
                 })
                 .map(m => {
                     // Attach workspace role to user object for frontend usage if needed
-                    const userObj = m.user.toObject();
+                    const userObj = m.user.toObject ? m.user.toObject() : { ...m.user._doc };
                     userObj.workspaceRole = m.role?.name;
                     return userObj;
                 });
@@ -388,12 +388,23 @@ const leaveWorkspace = async (req, res) => {
 const getAllUsersAdmin = async (req, res) => {
     try {
         const User = require('../models/User');
-        // Fetch ALL users in the system, sorted by newest
+        // Fetch ALL users in the system
         const users = await User.find({})
             .select('-password')
-            .sort({ createdAt: -1 });
+            .sort({
+                // Owner first, then by creation date
+                role: 1,  // This puts 'Admin', 'Member', 'Owner' in order
+                createdAt: -1
+            });
 
-        res.json(users);
+        // Sort manually to ensure Owner is truly first
+        const sortedUsers = users.sort((a, b) => {
+            if (a.role === 'Owner' && b.role !== 'Owner') return -1;
+            if (a.role !== 'Owner' && b.role === 'Owner') return 1;
+            return 0;
+        });
+
+        res.json(sortedUsers);
     } catch (error) {
         console.error('Get All Users Admin Error:', error);
         res.status(500).json({ message: 'Server Error fetching all users' });
