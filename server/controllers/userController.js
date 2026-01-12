@@ -238,6 +238,69 @@ const deleteUser = async (req, res) => {
         const user = await User.findById(req.params.id);
 
         if (user) {
+            // Handle workspace ownership transfer or deletion
+            const Workspace = require('../models/Workspace');
+            const Member = require('../models/Member');
+            const Role = require('../models/Role');
+            const Project = require('../models/Project');
+            const Task = require('../models/Task');
+            const { createNotification } = require('./notificationController');
+
+            // Find all workspaces where user is the owner
+            const ownedWorkspaces = await Workspace.find({ owner: req.params.id });
+
+            for (const workspace of ownedWorkspaces) {
+                // Find other members (excluding the owner being deleted)
+                const otherMembers = await Member.find({
+                    workspace: workspace._id,
+                    user: { $ne: req.params.id }
+                }).populate('user').populate('role');
+
+                if (otherMembers.length > 0) {
+                    // Transfer ownership to first member
+                    const newOwner = otherMembers[0];
+                    workspace.owner = newOwner.user._id;
+
+                    // Update member role to Owner
+                    const ownerRole = await Role.findOne({
+                        workspace: workspace._id,
+                        name: 'Owner'
+                    });
+
+                    if (ownerRole) {
+                        newOwner.role = ownerRole._id;
+                        await newOwner.save();
+                    }
+
+                    await workspace.save();
+
+                    // Notify new owner
+                    try {
+                        await createNotification({
+                            userId: newOwner.user._id,
+                            type: 'system',
+                            title: 'Workspace Ownership Transferred',
+                            message: `You are now the owner of "${workspace.name}"`,
+                            link: `/settings/workspace`,
+                            metadata: { workspaceId: workspace._id }
+                        });
+                    } catch (notifError) {
+                        console.error('Failed to notify new owner:', notifError);
+                    }
+
+                    console.log(`✅ Workspace "${workspace.name}" ownership transferred to ${newOwner.user.name}`);
+                } else {
+                    // No other members - delete workspace and all related data
+                    await Project.deleteMany({ workspace: workspace._id });
+                    await Task.deleteMany({ workspace: workspace._id });
+                    await Member.deleteMany({ workspace: workspace._id });
+                    await Role.deleteMany({ workspace: workspace._id });
+                    await workspace.deleteOne();
+
+                    console.log(`🗑️ Workspace "${workspace.name}" deleted (no other members)`);
+                }
+            }
+
             // Send suspended email
             const { sendAccountSuspendedNotification } = require('../services/emailService');
             try {
