@@ -153,6 +153,27 @@ class SocketService {
         this.socket.on('typing:stop', ({ userId, conversationId }) => {
             store.dispatch(setTyping({ conversationId, userId, isTyping: false }));
         });
+
+        // Force logout when user is suspended/deleted
+        this.socket.on('user:force_logout', ({ userId }) => {
+            const state = store.getState();
+            const currentUserId = state.auth.user?._id;
+
+            if (currentUserId === userId) {
+                console.warn('🚪 Account suspended - forcing logout');
+
+                // Clear authentication
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+
+                // Disconnect socket
+                this.disconnect();
+
+                // Show alert and redirect
+                alert('Your account has been suspended by an administrator.');
+                window.location.href = '/login';
+            }
+        });
     }
 
     disconnect() {

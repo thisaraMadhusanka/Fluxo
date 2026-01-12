@@ -310,6 +310,14 @@ const deleteUser = async (req, res) => {
             }
 
             await user.deleteOne();
+
+            // Emit Socket.IO event to force logout this user on all devices
+            const io = req.app.get('io');
+            if (io) {
+                io.emit('user:force_logout', { userId: req.params.id });
+                console.log(`🚪 Force logout event emitted for user ${req.params.id}`);
+            }
+
             res.json({ message: 'User removed' });
         } else {
             res.status(404).json({ message: 'User not found' });
