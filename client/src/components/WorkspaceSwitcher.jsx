@@ -10,6 +10,9 @@ const WorkspaceSwitcher = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { workspaces, currentWorkspace } = useSelector((state) => state.workspaces);
+
+    // Defensive check: ensure workspaces is always an array
+    const safeWorkspaces = Array.isArray(workspaces) ? workspaces : [];
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
@@ -93,14 +96,14 @@ const WorkspaceSwitcher = () => {
             {isOpen && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-2 duration-200 w-[220px]">
                     {/* Private Workspace Section */}
-                    {workspaces.some(ws => ws.isPrivate) && (
+                    {safeWorkspaces.some(ws => ws.isPrivate) && (
                         <div className="py-2">
                             <div className="px-3 py-1 text-[9px] font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1">
                                 <Lock size={10} />
                                 My Workspace
                             </div>
                             <div className="mt-0.5">
-                                {workspaces.filter(ws => ws.isPrivate).map((ws) => (
+                                {safeWorkspaces.filter(ws => ws.isPrivate).map((ws) => (
                                     <button
                                         key={ws._id}
                                         onClick={() => handleSwitch(ws._id)}
@@ -126,13 +129,13 @@ const WorkspaceSwitcher = () => {
                     )}
 
                     {/* Shared Workspaces Section */}
-                    {workspaces.some(ws => !ws.isPrivate) && (
+                    {safeWorkspaces.some(ws => !ws.isPrivate) && (
                         <div className="py-2">
                             <div className="px-3 py-1 text-[9px] font-semibold text-gray-400 uppercase tracking-wider">
                                 Shared Workspaces
                             </div>
                             <div className="mt-0.5 max-h-48 overflow-y-auto">
-                                {workspaces.filter(ws => !ws.isPrivate).map((ws) => (
+                                {safeWorkspaces.filter(ws => !ws.isPrivate).map((ws) => (
                                     <button
                                         key={ws._id}
                                         onClick={() => handleSwitch(ws._id)}
