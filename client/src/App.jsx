@@ -16,7 +16,6 @@ import Landing from '@/pages/Landing/Landing';
 import Features from '@/pages/Landing/Features';
 import PrivacyPolicy from '@/pages/Landing/PrivacyPolicy';
 import TermsConditions from '@/pages/Landing/TermsConditions';
-import MessagingLayout from '@/pages/Messaging/MessagingLayout';
 import { ToastProvider } from '@/components/Toast';
 import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
@@ -60,10 +59,6 @@ const App = () => {
                     {/* Settings */}
                     <Route path="/settings" element={<PrivateRoute><DashboardLayout><ProfileSettings /></DashboardLayout></PrivateRoute>} />
                     <Route path="/settings/workspace" element={<PrivateRoute><DashboardLayout><WorkspaceSettings /></DashboardLayout></PrivateRoute>} />
-
-                    {/* Messages */}
-                    <Route path="/messages" element={<PrivateRoute><DashboardLayout><MessagingLayout /></DashboardLayout></PrivateRoute>} />
-                    <Route path="/messages/:conversationId" element={<PrivateRoute><DashboardLayout><MessagingLayout /></DashboardLayout></PrivateRoute>} />
 
                     {/* Users Route */}
                     <Route path="/users" element={<PrivateRoute><DashboardLayout><Users /></DashboardLayout></PrivateRoute>} />
