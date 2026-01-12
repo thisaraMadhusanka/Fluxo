@@ -96,7 +96,16 @@ const AdminDashboard = () => {
             message: 'Are you sure you want to delete this user? This action cannot be undone and all their data will be lost.',
             variant: 'danger',
             confirmText: 'Delete',
-            onConfirm: () => dispatch(deleteUser(id))
+            onConfirm: async () => {
+                try {
+                    await dispatch(deleteUser(id)).unwrap();
+                    showToast('User deleted successfully', 'success');
+                    // Refetch to update the list
+                    dispatch(fetchAllSystemUsers());
+                } catch (error) {
+                    showToast(error || 'Failed to delete user', 'error');
+                }
+            }
         });
     };
 
