@@ -35,6 +35,11 @@ const getUsers = async (req, res) => {
                     return userObj;
                 });
 
+            // Add cache-control headers for fresh avatar display
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+
             return res.json(users);
         }
 
@@ -391,18 +396,25 @@ const getAllUsersAdmin = async (req, res) => {
         // Fetch ALL users in the system
         const users = await User.find({})
             .select('-password')
-            .sort({
-                // Owner first, then by creation date
-                role: 1,  // This puts 'Admin', 'Member', 'Owner' in order
-                createdAt: -1
-            });
+            .sort({ createdAt: -1 });
 
-        // Sort manually to ensure Owner is truly first
+        // Sort: specific owner first, then other Owners, then rest
         const sortedUsers = users.sort((a, b) => {
+            // thisarasanka4@gmail.com always first
+            if (a.email === 'thisarasanka4@gmail.com') return -1;
+            if (b.email === 'thisarasanka4@gmail.com') return 1;
+
+            // Then other Owners
             if (a.role === 'Owner' && b.role !== 'Owner') return -1;
             if (a.role !== 'Owner' && b.role === 'Owner') return 1;
+
             return 0;
         });
+
+        // Add cache-control headers to prevent avatar caching issues
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
 
         res.json(sortedUsers);
     } catch (error) {
