@@ -30,7 +30,8 @@ const messagesSlice = createSlice({
         },
         setMessages: (state, action) => {
             const { conversationId, messages } = action.payload;
-            state.messages[conversationId] = messages;
+            // Defensive: Ensure messages is an array
+            state.messages[conversationId] = Array.isArray(messages) ? messages : [];
         },
         addMessage: (state, action) => {
             const message = action.payload;

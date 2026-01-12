@@ -95,9 +95,9 @@ mongoose.connect(process.env.MONGODB_URI)
 // Export for Vercel
 module.exports = app;
 
-// Only listen if not running on Vercel (local development)
-// Listen on port if not on Vercel (Railway, Render, Local)
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+// Only listen if the file is run directly (Railway, Local)
+// This prevents Vercel (which imports the file) from trying to start a second server
+if (require.main === module) {
     server.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
         console.log('Socket.IO initialized');

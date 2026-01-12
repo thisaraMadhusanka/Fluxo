@@ -16,7 +16,7 @@ const ConversationList = ({ onCreateClick }) => {
     const filteredConversations = (Array.isArray(conversations) ? conversations : []).filter(conv => {
         // Search filter
         const matchesSearch = conv.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            conv.participants.some(p => p.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()));
+            (Array.isArray(conv.participants) ? conv.participants : []).some(p => p.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()));
 
         // Tab filter
         let matchesTab = true;

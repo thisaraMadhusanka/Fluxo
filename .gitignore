@@ -29,13 +29,16 @@ yarn-error.log*
 # vercel
 .vercel
 
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
-# Google Drive sync folders
-.tmp.drivedownload/
-.tmp.driveupload/
+# Temporary files
+.tmp.*
+.tmp/
+*.tmp
 
-# uploads
-uploads/
+# Uploads (Keep folder but ignore content)
+uploads/*
+!uploads/.gitkeep

@@ -20,19 +20,6 @@ class SocketService {
     }
 
     connect(token) {
-        // Only disable Socket.IO if we are on Vercel AND the API is NOT on Railway/Render (external)
-        const isProduction = import.meta.env.PROD;
-        const API_URL_DOMAIN = import.meta.env.VITE_API_URL || '';
-        const isVercel = window.location.hostname.includes('vercel.app');
-        const isExternalServer = API_URL_DOMAIN.includes('railway.app') || API_URL_DOMAIN.includes('onrender.com');
-
-        if (isProduction && isVercel && !isExternalServer) {
-            console.log('ℹ️ Socket.IO disabled: Vercel serverless detected without external backend');
-            console.log('💡 Configure VITE_API_URL to a Railway/Render server to enable real-time features');
-            this.isConnected = false;
-            return;
-        }
-
         if (this.socket) {
             this.disconnect();
         }
