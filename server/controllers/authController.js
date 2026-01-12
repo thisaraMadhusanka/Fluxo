@@ -205,45 +205,18 @@ exports.googleAuth = async (req, res) => {
         let user = await User.findOne({ email });
 
         if (!user) {
-            // New user Logic
-            const isOwner = email === 'thisarasanka4@gmail.com';
-
-            user = await User.create({
-                name,
-                email,
-                avatar: picture,
-                googleId: sub,
-                role: isOwner ? 'Owner' : 'Member',
-                isApproved: isOwner // Only owner is auto-approved
+            // Reject unknown users instead of auto-creating accounts
+            return res.status(403).json({
+                message: 'No account found with this email. Please register first or contact your administrator to request access.',
+                requiresRegistration: true
             });
+        }
 
-            if (!isOwner) {
-                // Notify owner via email
-                const { sendRegistrationNotification } = require('../services/emailService');
-                await sendRegistrationNotification(name, email);
-
-                // Create notification for ALL owners
-                const { createNotification } = require('./notificationController');
-                const owners = await User.find({ role: 'Owner' });
-
-                for (const owner of owners) {
-                    await createNotification({
-                        userId: owner._id,
-                        type: 'system',
-                        title: 'New User Registration (Google)',
-                        message: `${name} (${email}) has registered via Google and is waiting for approval`,
-                        link: '/settings/users',
-                        metadata: { userId: user._id, userEmail: email }
-                    });
-                }
-            }
-        } else {
-            // User exists - Force update role if it's the owner email (fix for existing users)
-            if (email === 'thisarasanka4@gmail.com' && user.role !== 'Owner') {
-                user.role = 'Owner';
-                user.isApproved = true;
-                await user.save();
-            }
+        // User exists - Force update role if it's the owner email (fix for existing users)
+        if (email === 'thisarasanka4@gmail.com' && user.role !== 'Owner') {
+            user.role = 'Owner';
+            user.isApproved = true;
+            await user.save();
         }
 
         // Ensure private workspace exists for ALL Google users (new or existing)
