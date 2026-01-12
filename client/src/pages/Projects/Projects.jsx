@@ -50,7 +50,7 @@ const Projects = () => {
         try {
             if (isEditing) {
                 const { data } = await api.put(`/projects/${projectData._id}`, projectData);
-                setProjects(projects.map(p => p._id === data._id ? data : p));
+                setProjects((Array.isArray(projects) ? projects : []).map(p => p._id === data._id ? data : p));
             } else {
                 const { data } = await api.post('/projects', projectData);
                 setProjects([...projects, data]);
@@ -68,7 +68,8 @@ const Projects = () => {
         if (!window.confirm('Are you sure you want to delete this project? All associated tasks will be permanently removed.')) return;
         try {
             await api.delete(`/projects/${project._id}`);
-            setProjects(projects.filter(p => p._id !== project._id));
+            await api.delete(`/projects/${project._id}`);
+            setProjects((Array.isArray(projects) ? projects : []).filter(p => p._id !== project._id));
         } catch (error) {
             console.error(error);
         }
@@ -78,7 +79,7 @@ const Projects = () => {
         try {
             const newStatus = project.status === 'Archived' ? 'Active' : 'Archived';
             const { data } = await api.put(`/projects/${project._id}`, { status: newStatus });
-            setProjects(projects.map(p => p._id === project._id ? data : p));
+            setProjects((Array.isArray(projects) ? projects : []).map(p => p._id === project._id ? data : p));
         } catch (error) {
             console.error(error);
         }

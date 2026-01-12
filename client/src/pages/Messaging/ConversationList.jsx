@@ -13,7 +13,7 @@ const ConversationList = ({ onCreateClick }) => {
     const [activeTab, setActiveTab] = useState('members'); // members, all, channels
 
     // Filter conversations based on search and tab
-    const filteredConversations = conversations.filter(conv => {
+    const filteredConversations = (Array.isArray(conversations) ? conversations : []).filter(conv => {
         // Search filter
         const matchesSearch = conv.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             conv.participants.some(p => p.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()));

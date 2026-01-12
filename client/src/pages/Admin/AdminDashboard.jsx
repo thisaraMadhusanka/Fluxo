@@ -141,7 +141,7 @@ const AdminDashboard = () => {
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
-                        Access Requests ({accessRequests.filter(r => r.status === 'pending').length})
+                        Access Requests ({(Array.isArray(accessRequests) ? accessRequests : []).filter(r => r.status === 'pending').length})
                     </button>
                 </div>
             </div>
@@ -258,7 +258,7 @@ const AdminDashboard = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {accessRequests.map((request) => (
+                                {(Array.isArray(accessRequests) ? accessRequests : []).map((request) => (
                                     <tr key={request._id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-gray-800">{request.name}</div>
