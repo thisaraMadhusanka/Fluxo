@@ -99,11 +99,11 @@ const AdminDashboard = () => {
             onConfirm: async () => {
                 try {
                     await dispatch(deleteUser(id)).unwrap();
-                    showToast('User deleted successfully', 'success');
+                    toast.success('User deleted successfully');
                     // Refetch to update the list
                     dispatch(fetchAllSystemUsers());
                 } catch (error) {
-                    showToast(error || 'Failed to delete user', 'error');
+                    toast.error(error || 'Failed to delete user');
                 }
             }
         });
