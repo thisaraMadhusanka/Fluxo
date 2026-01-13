@@ -183,6 +183,22 @@ const updateUserRole = async (req, res) => {
         if (user) {
             user.role = req.body.role || user.role;
             const updatedUser = await user.save();
+
+            // Emit Socket.IO event for real-time admin dashboard update
+            const io = req.app.get('io');
+            if (io) {
+                io.emit('admin:user_updated', {
+                    user: {
+                        _id: updatedUser._id,
+                        name: updatedUser.name,
+                        email: updatedUser.email,
+                        role: updatedUser.role,
+                        isApproved: updatedUser.isApproved,
+                        avatar: updatedUser.avatar
+                    }
+                });
+            }
+
             res.json({
                 _id: updatedUser._id,
                 name: updatedUser.name,
@@ -218,6 +234,12 @@ const approveUser = async (req, res) => {
             } catch (emailError) {
                 console.error('❌ Failed to send approval email:', emailError.message);
                 // Don't fail the approval if email fails
+            }
+
+            // Emit Socket.IO event for real-time admin dashboard update
+            const io = req.app.get('io');
+            if (io) {
+                io.emit('admin:user_updated', { user: updatedUser });
             }
 
             res.json({ message: 'User approved', user: updatedUser });

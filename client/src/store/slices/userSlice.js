@@ -95,6 +95,16 @@ const userSlice = createSlice({
         clearError: (state) => {
             state.error = null;
         },
+        // Real-time admin dashboard updates
+        updateAdminUser: (state, action) => {
+            const index = state.adminUsers.findIndex(u => u._id === action.payload._id);
+            if (index !== -1) {
+                state.adminUsers[index] = action.payload;
+            }
+        },
+        removeAdminUser: (state, action) => {
+            state.adminUsers = state.adminUsers.filter(u => u._id !== action.payload);
+        },
     },
     extraReducers: (builder) => {
         // Fetch users (Workspace)
@@ -169,5 +179,5 @@ const userSlice = createSlice({
     },
 });
 
-export const { clearError } = userSlice.actions;
+export const { clearError, updateAdminUser, removeAdminUser } = userSlice.actions;
 export default userSlice.reducer;
