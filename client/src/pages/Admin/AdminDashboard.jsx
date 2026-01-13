@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllSystemUsers, updateUserRole, approveUser, deleteUser } from '@/store/slices/userSlice';
+import { fetchAllSystemUsers, updateUserRole, approveUser, deleteUser, updateAdminUser, removeAdminUser } from '@/store/slices/userSlice';
 import { Trash2, Shield, CheckCircle, XCircle, UserCheck, Mail, CheckSquare, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import api from '@/services/api';
 import { useToast } from '@/components/Toast';
+import socketService from '@/services/socket';
 
 const AdminDashboard = () => {
     const dispatch = useDispatch();
@@ -33,6 +34,28 @@ const AdminDashboard = () => {
             return;
         }
         dispatch(fetchAllSystemUsers());
+
+        // Set up Socket.IO listeners for real-time updates
+        const socket = socketService.socket;
+        if (socket) {
+            socket.on('admin:user_updated', ({ user }) => {
+                console.log('🔄 Admin Dashboard: User updated via Socket.IO', user);
+                dispatch(updateAdminUser(user));
+            });
+
+            socket.on('admin:user_deleted', ({ userId }) => {
+                console.log('🗑️ Admin Dashboard: User deleted via Socket.IO', userId);
+                dispatch(removeAdminUser(userId));
+            });
+        }
+
+        // Cleanup listeners on unmount
+        return () => {
+            if (socket) {
+                socket.off('admin:user_updated');
+                socket.off('admin:user_deleted');
+            }
+        };
     }, [dispatch, currentUser, navigate]);
 
     useEffect(() => {
