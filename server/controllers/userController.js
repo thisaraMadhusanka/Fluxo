@@ -338,6 +338,10 @@ const deleteUser = async (req, res) => {
             if (io) {
                 io.emit('user:force_logout', { userId: req.params.id });
                 console.log(`🚪 Force logout event emitted for user ${req.params.id}`);
+
+                // Update admin dashboards in real-time
+                io.emit('admin:user_deleted', { userId: req.params.id });
+                console.log(`🗑️ Admin dashboard update event emitted`);
             }
 
             res.json({ message: 'User removed' });
