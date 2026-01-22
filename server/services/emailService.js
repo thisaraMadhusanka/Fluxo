@@ -7,7 +7,14 @@ const createTransporter = () => {
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_APP_PASSWORD
-        }
+        },
+        // Fix for Vercel/Serverless timeouts
+        pool: true, // Use pooled connections
+        maxConnections: 1, // Limit concurrent connections
+        socketTimeout: 30000, // 30s timeout
+        connectionTimeout: 30000, // 30s timeout
+        logger: true, // Log SMTP exchanges
+        debug: true   // Include debug info
     });
 };
 

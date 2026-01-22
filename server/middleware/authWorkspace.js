@@ -26,15 +26,13 @@ const authWorkspace = async (req, res, next) => {
             return res.status(403).json({ message: 'Your access to this workspace has been suspended.' });
         }
 
-        // 3. Fetch and validate workspace exists
-        const workspace = await Workspace.findById(workspaceId);
+        // 3. Attach to request
+        req.workspace = await Workspace.findById(workspaceId);
 
-        if (!workspace) {
-            return res.status(404).json({ message: 'Workspace not found or has been deleted' });
+        if (!req.workspace) {
+            return res.status(404).json({ message: 'Workspace not found' });
         }
 
-        // 4. Attach to request
-        req.workspace = workspace;
         req.member = member;
         req.workspaceRole = member.role;
 
