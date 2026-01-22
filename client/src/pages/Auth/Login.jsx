@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, AlertCircle, Check } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, Check, Eye, EyeOff, X } from 'lucide-react';
 import { login, register, googleLogin } from '@/store/slices/authSlice';
 
 const Login = () => {
@@ -14,6 +14,12 @@ const Login = () => {
         confirmPassword: ''
     });
     const [errors, setErrors] = useState({});
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetSent, setResetSent] = useState(false);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -119,6 +125,26 @@ const Login = () => {
         setErrors({});
     };
 
+    const handleForgotPassword = async () => {
+        if (!resetEmail || !/\S+@\S+\.\S+/.test(resetEmail)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+
+        try {
+            // TODO: Implement forgot password API call
+            console.log('Sending password reset to:', resetEmail);
+            setResetSent(true);
+            setTimeout(() => {
+                setShowForgotPassword(false);
+                setResetSent(false);
+                setResetEmail('');
+            }, 3000);
+        } catch (error) {
+            alert('Failed to send reset email. Please try again.');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-secondary/5 flex items-center justify-center p-4">
             <motion.div
@@ -215,14 +241,21 @@ const Login = () => {
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     name="password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className={`w-full pl-10 pr-4 py-2.5 rounded-lg border ${errors.password ? 'border-red-300' : 'border-gray-200'
+                                    className={`w-full pl-10 pr-10 py-2.5 rounded-lg border ${errors.password ? 'border-red-300' : 'border-gray-200'
                                         } focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all`}
                                     placeholder="••••••••"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
                             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                         </div>
@@ -235,14 +268,21 @@ const Login = () => {
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                                     <input
-                                        type="password"
+                                        type={showConfirmPassword ? "text" : "password"}
                                         name="confirmPassword"
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
-                                        className={`w-full pl-10 pr-4 py-2.5 rounded-lg border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-200'
+                                        className={`w-full pl-10 pr-10 py-2.5 rounded-lg border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-200'
                                             } focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all`}
                                         placeholder="••••••••"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
                                 </div>
                                 {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
                             </div>
@@ -250,13 +290,22 @@ const Login = () => {
 
                         {isLogin && (
                             <div className="flex items-center justify-between text-sm">
-                                <label className="flex items-center">
-                                    <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-primary" />
+                                <label className="flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        className="rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                                    />
                                     <span className="ml-2 text-gray-600">Remember me</span>
                                 </label>
-                                <a href="#" className="text-primary hover:text-primary/80 font-medium">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowForgotPassword(true)}
+                                    className="text-primary hover:text-primary/80 font-medium"
+                                >
                                     Forgot password?
-                                </a>
+                                </button>
                             </div>
                         )}
 
@@ -319,6 +368,74 @@ const Login = () => {
                             >
                                 Back to Login
                             </button>
+                        </motion.div>
+                    )}
+
+                    {/* Forgot Password Modal */}
+                    {showForgotPassword && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/50 backdrop-blur-sm rounded-2xl flex items-center justify-center z-50"
+                            onClick={() => setShowForgotPassword(false)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-2xl font-bold text-gray-800">Reset Password</h3>
+                                    <button
+                                        onClick={() => setShowForgotPassword(false)}
+                                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                {!resetSent ? (
+                                    <>
+                                        <p className="text-gray-600 mb-6">
+                                            Enter your email address and we'll send you a link to reset your password.
+                                        </p>
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Email Address
+                                            </label>
+                                            <div className="relative">
+                                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                                <input
+                                                    type="email"
+                                                    value={resetEmail}
+                                                    onChange={(e) => setResetEmail(e.target.value)}
+                                                    placeholder="your@email.com"
+                                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                                    autoFocus
+                                                />
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={handleForgotPassword}
+                                            className="w-full py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                                        >
+                                            Send Reset Link
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Check size={32} />
+                                        </div>
+                                        <h4 className="text-xl font-bold text-gray-800 mb-2">Check Your Email</h4>
+                                        <p className="text-gray-600">
+                                            We've sent a password reset link to <strong>{resetEmail}</strong>
+                                        </p>
+                                    </div>
+                                )}
+                            </motion.div>
                         </motion.div>
                     )}
                 </AnimatePresence>
