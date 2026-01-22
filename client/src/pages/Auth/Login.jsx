@@ -299,7 +299,7 @@ const Login = () => {
                             <p className="text-gray-500">We are verifying your credentials</p>
                         </motion.div>
                     )}
-                    {error && error.includes('pending approval') && (
+                    {(error && (error.includes('pending approval') || error.includes('Please wait for admin') || error.includes('wait for admin approval'))) && (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}

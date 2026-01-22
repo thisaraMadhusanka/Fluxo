@@ -196,6 +196,13 @@ exports.sendAccountSuspendedNotification = async (userEmail, userName) => {
 // Send registration notification to admin
 exports.sendRegistrationNotification = async (userName, userEmail) => {
     try {
+        // Check if email is configured
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
+            console.error('⚠️ EMAIL NOT CONFIGURED - Missing EMAIL_USER or EMAIL_APP_PASSWORD in environment variables');
+            console.error('⚠️ Admin will NOT receive email notification for:', userName, userEmail);
+            return { success: false, error: 'Email not configured' };
+        }
+
         const transporter = createTransporter();
 
         // This is sent to the system admin for email alerts
@@ -220,7 +227,7 @@ exports.sendRegistrationNotification = async (userName, userEmail) => {
                     <p><strong>${userName}</strong> (${userEmail}) has registered and is waiting for approval.</p>
                 </div>
                 <div class="content">
-                    <a href="https://fluxo-xi.vercel.app/settings/users" class="btn">Manage Users</a>
+                    <a href="https://fluxo-xi.vercel.app/admin" class="btn">Manage Users</a>
                 </div>
             </div>
         </div>
@@ -228,14 +235,18 @@ exports.sendRegistrationNotification = async (userName, userEmail) => {
     </html>
         `;
 
-        await transporter.sendMail({
+        const result = await transporter.sendMail({
             from: `Fluxo System <${process.env.EMAIL_USER}>`,
             to: adminEmail,
             subject,
             html
         });
-        console.log('✅ Admin registration alert sent');
+
+        console.log('✅ Admin registration notification sent successfully:', result.messageId);
+        return { success: true, messageId: result.messageId };
     } catch (error) {
-        console.error('Failed to send admin alert:', error);
+        console.error('❌ FAILED to send admin notification email:', error.message);
+        console.error('❌ User registration:', userName, userEmail);
+        return { success: false, error: error.message };
     }
 };

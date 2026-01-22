@@ -44,8 +44,13 @@ export const register = createAsyncThunk(
     async (userData, { rejectWithValue }) => {
         try {
             const { data } = await api.post('/auth/register', userData);
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
+
+            // Only save to localStorage if token exists (user is approved)
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+            }
+
             return data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Registration failed');
@@ -114,10 +119,20 @@ const authSlice = createSlice({
         });
         builder.addCase(register.fulfilled, (state, action) => {
             state.loading = false;
-            state.isAuthenticated = true;
-            state.user = action.payload.user;
-            state.token = action.payload.token;
-            state.error = null;
+
+            // Check if user is approved (has token)
+            if (action.payload.token) {
+                state.isAuthenticated = true;
+                state.user = action.payload.user;
+                state.token = action.payload.token;
+                state.error = null;
+            } else {
+                // User registered but pending approval
+                state.isAuthenticated = false;
+                state.user = null;
+                state.token = null;
+                state.error = action.payload.message || 'Registration successful. Please wait for admin approval.';
+            }
         });
         builder.addCase(register.rejected, (state, action) => {
             state.loading = false;

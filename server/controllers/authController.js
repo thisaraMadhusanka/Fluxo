@@ -205,11 +205,46 @@ exports.googleAuth = async (req, res) => {
         let user = await User.findOne({ email });
 
         if (!user) {
-            // Reject unknown users instead of auto-creating accounts
-            return res.status(403).json({
-                message: 'No account found with this email. Please register first or contact your administrator to request access.',
-                requiresRegistration: true
+            // Create new user from Google (require approval unless owner)
+            const isOwner = email === 'thisarasanka4@gmail.com';
+
+            user = await User.create({
+                name,
+                email,
+                avatar: picture,
+                googleId: sub,
+                role: isOwner ? 'Owner' : 'Member',
+                isApproved: isOwner // Only owner is auto-approved
             });
+
+            if (!isOwner) {
+                // Send notification email to admin
+                await sendRegistrationNotification(name, email);
+
+                // Create in-app notification for owners
+                const { createNotification } = require('./notificationController');
+                const owners = await User.find({ role: 'Owner' });
+
+                for (const owner of owners) {
+                    await createNotification({
+                        userId: owner._id,
+                        type: 'system',
+                        title: 'New User Registration (Google)',
+                        message: `${name} (${email}) registered via Google and is waiting for approval`,
+                        link: '/admin',
+                        metadata: { userId: user._id, userEmail: email }
+                    });
+                }
+
+                // Return without token - user must wait for approval
+                return res.status(403).json({
+                    message: 'Registration successful! Please wait for admin approval. You will receive an email once approved.',
+                    requiresApproval: true
+                });
+            }
+
+            // Owner gets auto-approved and workspace created
+            await ensurePrivateWorkspace(user);
         }
 
         // User exists - Force update role if it's the owner email (fix for existing users)
