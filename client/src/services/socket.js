@@ -31,6 +31,17 @@ class SocketService {
             API_URL = API_URL.replace(/\/api$/, '');
         }
 
+        // DISABLE WebSocket on production (Vercel doesn't support WebSockets in serverless)
+        const isProduction = window.location.hostname.includes('vercel.app') ||
+            window.location.hostname === 'fluxo-xi.vercel.app';
+
+        if (isProduction) {
+            console.warn('⚠️ WebSocket disabled on production (Vercel serverless limitation)');
+            console.warn('💡 Messages will work via HTTP API - refresh to see new messages');
+            this.isConnected = false;
+            return; // Exit early, don't create socket connection
+        }
+
         console.log('Connecting to Socket.IO:', API_URL);
 
         this.socket = io(API_URL, {
