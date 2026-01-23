@@ -6,6 +6,8 @@ const Conversation = require('../models/Conversation');
 // @access  Private
 const getConversations = async (req, res) => {
     try {
+        console.log('📞 Fetching conversations for user:', req.user.id);
+
         const conversations = await Conversation.find({
             'participants.user': req.user.id,
             archivedBy: { $ne: req.user.id }
@@ -14,21 +16,50 @@ const getConversations = async (req, res) => {
             .populate('lastMessage.sender', 'name avatar')
             .populate('workspace', 'name')
             .populate('project', 'title emoji')
-            .sort({ 'lastMessage.timestamp': -1 });
+            .sort({ 'lastMessage.timestamp': -1 })
+            .lean(); // Use lean() for better performance
 
-        // Get unread count for each conversation
-        const conversationsWithUnread = conversations.map(conv => {
-            const participant = conv.getParticipant(req.user.id);
-            return {
-                ...conv.toObject(),
-                unreadCount: participant?.unreadCount || 0
-            };
-        });
+        console.log(`✅ Found ${conversations.length} conversations`);
 
-        res.json(conversationsWithUnread);
+        // Filter out conversations with invalid data and add unread count
+        const validConversations = conversations
+            .filter(conv => {
+                // Check if participants array exists and has valid users
+                if (!conv.participants || !Array.isArray(conv.participants)) {
+                    console.warn('⚠️ Conversation has no participants:', conv._id);
+                    return false;
+                }
+
+                // Check if at least one participant is valid
+                const hasValidParticipants = conv.participants.some(p => p.user && p.user._id);
+                if (!hasValidParticipants) {
+                    console.warn('⚠️ Conversation has no valid participants:', conv._id);
+                    return false;
+                }
+
+                return true;
+            })
+            .map(conv => {
+                // Find current user's participant record
+                const participant = conv.participants.find(
+                    p => p.user && p.user._id.toString() === req.user.id.toString()
+                );
+
+                return {
+                    ...conv,
+                    unreadCount: participant?.unreadCount || 0
+                };
+            });
+
+        console.log(`✅ Returning ${validConversations.length} valid conversations`);
+        res.json(validConversations);
     } catch (error) {
-        console.error('Get Conversations Error:', error);
-        res.status(500).json({ message: 'Server Error fetching conversations' });
+        console.error('❌ Get Conversations Error:', error);
+        console.error('Error stack:', error.stack);
+        res.status(500).json({
+            message: 'Server Error fetching conversations',
+            error: error.message
+        });
     }
 };
 
