@@ -156,22 +156,47 @@ const uploadAvatar = async (req, res) => {
 
         const user = await User.findById(req.user.id);
 
-        if (user) {
-            user.avatar = avatar;
-            await user.save();
-
-            res.json({
-                message: 'Avatar uploaded successfully',
-                avatar: user.avatar
-            });
-        } else {
-            res.status(404).json({ message: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
+
+        // Import Cloudinary service
+        const { uploadImage, deleteImage, getPublicIdFromUrl } = require('../services/cloudinaryService');
+
+        // Delete old avatar from Cloudinary if it exists
+        if (user.avatar && user.avatar.includes('cloudinary.com')) {
+            const oldPublicId = getPublicIdFromUrl(user.avatar);
+            if (oldPublicId) {
+                try {
+                    await deleteImage(oldPublicId);
+                } catch (deleteError) {
+                    console.warn('Could not delete old avatar:', deleteError.message);
+                }
+            }
+        }
+
+        // Upload new avatar to Cloudinary (or fallback to base64)
+        const result = await uploadImage(avatar, {
+            folder: 'fluxo/avatars',
+            public_id: `user_${user._id}_${Date.now()}`
+        });
+
+        // Store the Cloudinary URL (or base64 if fallback)
+        user.avatar = result.secure_url;
+        await user.save();
+
+        console.log(`✅ Avatar updated for user ${user.name}: ${result.isLocal ? 'base64' : 'Cloudinary'}`);
+
+        res.json({
+            message: 'Avatar uploaded successfully',
+            avatar: user.avatar
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error('Upload Avatar Error:', error);
+        res.status(500).json({ message: 'Server Error uploading avatar' });
     }
 };
+
 
 // @desc    Update user role
 // @route   PUT /api/users/:id/role
