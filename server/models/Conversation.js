@@ -88,18 +88,18 @@ conversationSchema.virtual('participantCount').get(function () {
 
 // Method to check if user is participant
 conversationSchema.methods.isParticipant = function (userId) {
-    return this.participants.some(p => p.user.toString() === userId.toString());
+    return this.participants.some(p => p.user && p.user.toString() === userId.toString());
 };
 
 // Method to get participant object for a user
 conversationSchema.methods.getParticipant = function (userId) {
-    return this.participants.find(p => p.user.toString() === userId.toString());
+    return this.participants.find(p => p.user && p.user.toString() === userId.toString());
 };
 
 // Method to increment unread count for all participants except sender
 conversationSchema.methods.incrementUnreadCount = function (senderId) {
     this.participants.forEach(participant => {
-        if (participant.user.toString() !== senderId.toString()) {
+        if (participant.user && participant.user.toString() !== senderId.toString()) {
             participant.unreadCount += 1;
         }
     });
