@@ -35,7 +35,15 @@ const messagesSlice = createSlice({
         },
         addMessage: (state, action) => {
             const message = action.payload;
-            const conversationId = message.conversation;
+            // Handle conversation being either an ObjectId string or a populated object
+            const conversationId = typeof message.conversation === 'object'
+                ? message.conversation?._id
+                : message.conversation;
+
+            if (!conversationId) {
+                console.error('addMessage: No conversation ID found in message', message);
+                return;
+            }
 
             if (!state.messages[conversationId]) {
                 state.messages[conversationId] = [];
@@ -57,6 +65,7 @@ const messagesSlice = createSlice({
                 };
             }
         },
+
         updateMessage: (state, action) => {
             const { conversationId, messageId, updates } = action.payload;
             if (state.messages[conversationId]) {
