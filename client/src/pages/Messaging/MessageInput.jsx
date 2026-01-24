@@ -114,16 +114,33 @@ const MessageInput = ({ conversationId }) => {
     };
 
     // Handle send message
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!message.trim()) return;
 
-        console.log('Sending message:', { conversationId, content: message.trim() });
+        const content = message.trim();
+        console.log('Sending message:', { conversationId, content });
 
-        socketService.sendMessage({
+        // Try socket first
+        const tempId = socketService.sendMessage({
             conversationId,
-            content: message.trim(),
+            content,
             type: 'text'
         });
+
+        // If socket is not connected, fallback to HTTP
+        if (!tempId) {
+            console.log('Socket not connected, using HTTP fallback');
+            try {
+                await api.post(`/conversations/${conversationId}/messages`, {
+                    content,
+                    type: 'text'
+                });
+            } catch (error) {
+                console.error('Failed to send message via HTTP:', error);
+                alert('Failed to send message. Please try again.');
+                return; // Don't clear message if failed
+            }
+        }
 
         setMessage('');
 
@@ -138,6 +155,7 @@ const MessageInput = ({ conversationId }) => {
             clearTimeout(typingTimeoutRef.current);
         }
     };
+
 
     // Handle Enter key
     const handleKeyDown = (e) => {

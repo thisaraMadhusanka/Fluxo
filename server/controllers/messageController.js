@@ -145,6 +145,13 @@ const sendMessage = async (req, res) => {
         // Populate sender info
         await message.populate('sender', 'name email avatar');
 
+        // Broadcast message to all connected socket clients in this conversation
+        const io = req.app.get('io');
+        if (io) {
+            console.log(`📢 HTTP API: Broadcasting message:new to room conversation:${conversationId}`);
+            io.to(`conversation:${conversationId}`).emit('message:new', message);
+        }
+
         res.status(201).json(message);
     } catch (error) {
         console.error('Send Message Error:', error);
