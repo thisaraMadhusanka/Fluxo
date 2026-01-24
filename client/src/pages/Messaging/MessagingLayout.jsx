@@ -79,6 +79,19 @@ const MessagingLayout = () => {
         };
     }, [conversationId, conversations, dispatch]);
 
+    // Polling fallback for when WebSocket is not connected
+    useEffect(() => {
+        if (!conversationId || socketService.isConnected) return;
+
+        console.log('⚠️ Socket not connected, enabling polling fallback');
+        const pollInterval = setInterval(() => {
+            loadMessages(conversationId);
+        }, 5000); // Poll every 5 seconds
+
+        return () => clearInterval(pollInterval);
+    }, [conversationId]);
+
+
     // Load messages for active conversation
     const loadMessages = async (convId) => {
         try {
