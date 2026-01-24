@@ -298,7 +298,7 @@ const initializeSocket = (io) => {
                 await message.deleteOne();
 
                 // Emit to all users in the conversation
-                io.to(conversationId).emit('messageDeleted', { messageId });
+                io.to(`conversation:${conversationId}`).emit('messageDeleted', { messageId });
             } catch (error) {
                 console.error('[Socket] Delete message error:', error);
             }
@@ -313,7 +313,7 @@ const initializeSocket = (io) => {
                 await Message.deleteMany({ conversation: conversationId });
 
                 // Emit to all users in the conversation
-                io.to(conversationId).emit('conversationCleared', { conversationId });
+                io.to(`conversation:${conversationId}`).emit('conversationCleared', { conversationId });
             } catch (error) {
                 console.error('[Socket] Clear conversation error:', error);
             }

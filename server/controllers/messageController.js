@@ -366,7 +366,7 @@ const deleteMessage = async (req, res) => {
         // Emit socket event
         const io = req.app.get('io');
         if (io) {
-            io.to(message.conversation.toString()).emit('messageDeleted', { messageId: id });
+            io.to(`conversation:${message.conversation.toString()}`).emit('messageDeleted', { messageId: id });
         }
 
         res.json({ message: 'Message deleted successfully' });
@@ -402,7 +402,7 @@ const clearConversation = async (req, res) => {
         // Emit socket event
         const io = req.app.get('io');
         if (io) {
-            io.to(id).emit('conversationCleared', { conversationId: id });
+            io.to(`conversation:${id}`).emit('conversationCleared', { conversationId: id });
         }
 
         res.json({ message: 'Conversation cleared successfully' });
@@ -446,7 +446,7 @@ const deleteConversation = async (req, res) => {
         // Emit socket event
         const io = req.app.get('io');
         if (io) {
-            io.to(id).emit('conversationDeleted', { conversationId: id });
+            io.to(`conversation:${id}`).emit('conversationDeleted', { conversationId: id });
         }
 
         res.json({ message: 'Conversation deleted successfully' });
