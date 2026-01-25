@@ -35,21 +35,22 @@ const MessageInput = ({ conversationId }) => {
 
     // Handle typing indicator
     const handleTyping = () => {
+        // Typing indicators temporarily disabled during migration
+        /*
         if (!isTyping) {
             setIsTyping(true);
-            socketService.startTyping(conversationId);
+            // chatService.setTypingStatus(conversationId, user.id, true);
         }
 
-        // Clear existing timeout
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current);
         }
 
-        // Stop typing after 2 seconds of inactivity
         typingTimeoutRef.current = setTimeout(() => {
             setIsTyping(false);
-            socketService.stopTyping(conversationId);
+            // chatService.setTypingStatus(conversationId, user.id, false);
         }, 2000);
+        */
     };
 
     // Handle input change
@@ -136,7 +137,7 @@ const MessageInput = ({ conversationId }) => {
         // Stop typing indicator
         if (isTyping) {
             setIsTyping(false);
-            socketService.stopTyping(conversationId);
+            // socketService.stopTyping(conversationId);
         }
 
         // Clear timeout

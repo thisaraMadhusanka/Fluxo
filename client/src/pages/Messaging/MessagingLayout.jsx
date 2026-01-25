@@ -8,7 +8,7 @@ import MessageInput from './MessageInput';
 import ConversationHeader from './ConversationHeader';
 import CreateConversationModal from './CreateConversationModal';
 import api from '@/services/api';
-import socketService from '@/services/socket';
+import { chatService } from '@/services/chatService';
 import { setConversations, setActiveConversation, setMessages, markConversationAsRead } from '@/store/slices/messagesSlice';
 
 const MessagingLayout = () => {

@@ -21,23 +21,11 @@ import MessagingLayout from '@/pages/Messaging/MessagingLayout';
 import { ToastProvider } from '@/components/Toast';
 import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
-import socketService from '@/services/socket';
 
 const App = () => {
     const { isAuthenticated, token } = useSelector((state) => state.auth);
 
-    // Connect socket globally when user is authenticated
-    useEffect(() => {
-        if (isAuthenticated && token) {
-            console.log('🌐 Connecting socket globally from App.jsx');
-            socketService.connect(token);
-        }
-
-        return () => {
-            // Don't disconnect here as it will disconnect when navigating
-            // Socket will be managed by individual pages
-        };
-    }, [isAuthenticated, token]);
+    // Socket connection replaced by Firebase (handled in MessagingLayout)
 
     return (
         <ToastProvider>
