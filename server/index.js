@@ -4,24 +4,13 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const http = require('http');
 const path = require('path');
-const { Server } = require('socket.io');
+// const { Server } = require('socket.io'); // Removed for serverless
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
-
-// Initialize Socket.IO
-const io = new Server(server, {
-    cors: {
-        origin: ['https://fluxo-xi.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
-        credentials: true,
-        methods: ['GET', 'POST']
-    },
-    transports: ['websocket', 'polling'],
-    path: '/socket.io/'
-});
 
 // Middleware
 app.use(cors({
@@ -51,11 +40,19 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const accessRequestRoutes = require('./routes/accessRequestRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 
-// Socket.IO handler
-const { initializeSocket } = require('./socket/messageHandler');
-initializeSocket(io);
+// Mock Socket.IO for serverless environment (controllers expect 'io')
+const io = {
+    to: (room) => ({
+        emit: (event, data) => {
+            // console.log(`[Mock IO] Emitting ${event} to ${room}`);
+        }
+    }),
+    emit: (event, data) => {
+        // console.log(`[Mock IO] Emitting ${event}`);
+    }
+};
 
-// Make io accessible to routes
+// Make mock io accessible to routes
 app.set('io', io);
 
 // Routes

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, Smile, Image, PlusCircle, X, Loader2 } from 'lucide-react';
-import socketService from '@/services/socket';
+import { chatService } from '@/services/chatService';
 import EmojiPicker from '@/components/EmojiPicker';
 import api from '@/services/api';
 
@@ -120,26 +120,15 @@ const MessageInput = ({ conversationId }) => {
         const content = message.trim();
         console.log('Sending message:', { conversationId, content });
 
-        // Try socket first
-        const tempId = socketService.sendMessage({
-            conversationId,
-            content,
-            type: 'text'
-        });
-
-        // If socket is not connected, fallback to HTTP
-        if (!tempId) {
-            console.log('Socket not connected, using HTTP fallback');
-            try {
-                await api.post(`/conversations/${conversationId}/messages`, {
-                    content,
-                    type: 'text'
-                });
-            } catch (error) {
-                console.error('Failed to send message via HTTP:', error);
-                alert('Failed to send message. Please try again.');
-                return; // Don't clear message if failed
-            }
+        // ... inside handleSend ...
+        try {
+            await chatService.sendMessage(conversationId, {
+                content,
+                type: 'text'
+            });
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            alert('Failed to send message. Please try again.');
         }
 
         setMessage('');

@@ -20,22 +20,15 @@ const MessagingLayout = () => {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
 
-    // Handle socket reconnection - rejoin conversation if connected
+    // Handle Firebase subscription
     useEffect(() => {
-        const handleConnect = () => {
-            if (conversationId) {
-                console.log('Reconnected, joining conversation:', conversationId);
-                socketService.joinConversation(conversationId);
-            }
-        };
-
-        if (socketService.socket) {
-            socketService.socket.on('connect', handleConnect);
+        if (conversationId) {
+            chatService.subscribeToMessages(conversationId);
         }
 
         return () => {
-            if (socketService.socket) {
-                socketService.socket.off('connect', handleConnect);
+            if (conversationId) {
+                chatService.unsubscribeFromMessages(conversationId);
             }
         };
     }, [conversationId]);
@@ -62,34 +55,10 @@ const MessagingLayout = () => {
             const conversation = conversations.find(c => c._id === conversationId);
             if (conversation) {
                 dispatch(setActiveConversation(conversation));
-
-                // Ensure socket is connected before joining
-                if (socketService.isConnected) {
-                    socketService.joinConversation(conversationId);
-                }
-
                 loadMessages(conversationId);
             }
         }
-
-        return () => {
-            if (conversationId) {
-                socketService.leaveConversation(conversationId);
-            }
-        };
     }, [conversationId, conversations, dispatch]);
-
-    // Polling fallback for when WebSocket is not connected
-    useEffect(() => {
-        if (!conversationId || socketService.isConnected) return;
-
-        console.log('⚠️ Socket not connected, enabling polling fallback');
-        const pollInterval = setInterval(() => {
-            loadMessages(conversationId);
-        }, 5000); // Poll every 5 seconds
-
-        return () => clearInterval(pollInterval);
-    }, [conversationId]);
 
 
     // Load messages for active conversation
