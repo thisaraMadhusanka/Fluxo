@@ -1,0 +1,14 @@
+{
+    "private": true,
+    "workspaces": [
+        "client",
+        "server"
+    ],
+    "scripts": {
+        "build": "echo 'Building...'",
+        "start": "echo 'Starting...'"
+    },
+    "engines": {
+        "node": ">=18"
+    }
+}
