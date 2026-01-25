@@ -109,7 +109,8 @@ const getMessages = async (req, res) => {
 // @access  Private
 const sendMessage = async (req, res) => {
     try {
-        const { conversationId, content, type = 'text', replyTo, attachments } = req.body;
+        const { content, type = 'text', replyTo, attachments } = req.body;
+        const conversationId = req.body.conversationId || req.params.id;
 
         // Verify conversation exists and user is participant
         const conversation = await Conversation.findById(conversationId);

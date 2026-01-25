@@ -18,6 +18,7 @@ const {
 router.get('/conversations', protect, getConversations);
 router.post('/conversations', protect, createConversation);
 router.get('/conversations/:id/messages', protect, getMessages);
+router.post('/conversations/:id/messages', protect, sendMessage);
 router.post('/conversations/:id/read', protect, markAsRead);
 router.delete('/conversations/:id/messages', protect, clearConversation);
 router.delete('/conversations/:id', protect, deleteConversation);
