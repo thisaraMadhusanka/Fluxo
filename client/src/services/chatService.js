@@ -1,6 +1,6 @@
 import { db } from "./firebase";
 import { ref, push, onChildAdded, serverTimestamp, set, remove, off } from "firebase/database";
-import store from "@/store/store"; // Access Redux store directly (read-only recommended)
+import store from "@/store"; // Access Redux store directly (read-only recommended)
 import { addMessage, setTyping } from "@/store/slices/messagesSlice";
 import api from "./api"; // For non-realtime fallback or initial load if needed
 
