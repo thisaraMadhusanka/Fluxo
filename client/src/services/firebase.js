@@ -14,7 +14,7 @@ const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase only if config is present
+// Initialize Firebase
 let app;
 let db;
 let analytics;
@@ -23,11 +23,14 @@ try {
     if (firebaseConfig.apiKey) {
         app = initializeApp(firebaseConfig);
         db = getDatabase(app);
-        // Analytics is optional, but good to have since user provided measurementId
+
+        // Initialize Analytics conditionally
         if (typeof window !== 'undefined') {
-            const { getAnalytics } = await import("firebase/analytics");
-            analytics = getAnalytics(app);
+            import("firebase/analytics").then(({ getAnalytics }) => {
+                analytics = getAnalytics(app);
+            }).catch(err => console.log("Analytics failed to load", err));
         }
+
         console.log("✅ Firebase initialized successfully");
     } else {
         console.warn("⚠️ Firebase config missing. Chat will not work until keys are added to .env");
