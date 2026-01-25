@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
 import { Smile, Paperclip, Trash2 } from 'lucide-react';
-import socketService from '@/services/socket';
 import api from '@/services/api';
 import ConfirmationModal from '@/components/ConfirmationModal';
 
@@ -51,7 +50,7 @@ const MessageList = ({ messages, conversationId }) => {
         return sameSender && withinTime;
     };
 
-    const handleReaction = (messageId, emoji) => {
+    const handleReaction = async (messageId, emoji) => {
         const currentUserId = user._id || user.id;
         const message = messages.find(m => m._id === messageId);
         if (!message) return;
@@ -60,7 +59,12 @@ const MessageList = ({ messages, conversationId }) => {
             r.emoji === emoji && r.users.some(u => (u._id || u) === currentUserId)
         );
 
-        socketService.reactToMessage(messageId, emoji, userReacted ? 'remove' : 'add');
+        // Use API instead of socket for reactions
+        try {
+            await api.post(`/messages/${messageId}/react`, { emoji, action: userReacted ? 'remove' : 'add' });
+        } catch (error) {
+            console.error('Failed to react to message:', error);
+        }
     };
 
     // Handle delete message

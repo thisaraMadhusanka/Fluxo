@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import api from '@/services/api';
 import { useToast } from '@/components/Toast';
-import socketService from '@/services/socket';
 
 const AdminDashboard = () => {
     const dispatch = useDispatch();
@@ -35,26 +34,13 @@ const AdminDashboard = () => {
         }
         dispatch(fetchAllSystemUsers());
 
-        // Set up Socket.IO listeners for real-time updates
-        const socket = socketService.socket;
-        if (socket) {
-            socket.on('admin:user_updated', ({ user }) => {
-                console.log('🔄 Admin Dashboard: User updated via Socket.IO', user);
-                dispatch(updateAdminUser(user));
-            });
+        // Polling for updates (Socket.IO removed for serverless compatibility)
+        const interval = setInterval(() => {
+            dispatch(fetchAllSystemUsers());
+        }, 30000); // Refresh every 30 seconds
 
-            socket.on('admin:user_deleted', ({ userId }) => {
-                console.log('🗑️ Admin Dashboard: User deleted via Socket.IO', userId);
-                dispatch(removeAdminUser(userId));
-            });
-        }
-
-        // Cleanup listeners on unmount
         return () => {
-            if (socket) {
-                socket.off('admin:user_updated');
-                socket.off('admin:user_deleted');
-            }
+            clearInterval(interval);
         };
     }, [dispatch, currentUser, navigate]);
 

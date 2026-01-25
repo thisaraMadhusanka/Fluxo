@@ -95,9 +95,8 @@ const MessageInput = ({ conversationId }) => {
                 });
             }
 
-            // Send message with attachments
-            socketService.sendMessage({
-                conversationId,
+            // Send message with attachments via chatService
+            await chatService.sendMessage(conversationId, {
                 content: message.trim() || 'Sent an attachment',
                 type: 'file',
                 attachments
