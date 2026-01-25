@@ -19,8 +19,12 @@
             "destination": "/api/index.js"
         },
         {
-            "source": "/(.*)",
-            "destination": "/client/$1"
+            "source": "/assets/(.*)",
+            "destination": "/client/assets/$1"
+        },
+        {
+            "source": "/((?!api/.*).*)",
+            "destination": "/client/index.html"
         }
     ]
 }
