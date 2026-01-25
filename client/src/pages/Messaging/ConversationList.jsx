@@ -169,7 +169,16 @@ const ConversationList = ({ onCreateClick }) => {
                             return (
                                 <div
                                     key={conv._id}
-                                    onClick={() => navigate(`/messages/${conv._id}`)}
+                                    onClick={() => {
+                                        // Use username for direct messages if available, otherwise ID
+                                        if (conv.type === 'direct') {
+                                            const otherUser = conv.participants.find(p => (p.user?._id || p.user)?.toString() !== currentUserId?.toString())?.user;
+                                            const identifier = otherUser?.username || otherUser?.name || conv._id;
+                                            navigate(`/messages/${identifier}`);
+                                        } else {
+                                            navigate(`/messages/${conv._id}`);
+                                        }
+                                    }}
                                     className={`group relative mx-2 p-3 rounded-2xl cursor-pointer transition-all duration-300 ${isActive
                                         ? 'bg-white shadow-[0_4px_20px_rgb(0,0,0,0.08)] scale-[1.02] z-10'
                                         : 'hover:bg-gray-100/80 active:scale-95'

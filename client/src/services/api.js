@@ -1,8 +1,17 @@
 import axios from 'axios';
 import { store } from '../store';
 
+const getBaseUrl = () => {
+    const envUrl = import.meta.env.VITE_API_URL;
+    // Defensively ignore the old Railway URL if it's still stuck in environment variables
+    if (envUrl && !envUrl.includes('railway.app')) {
+        return envUrl;
+    }
+    return '/api';
+};
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/api',
+    baseURL: getBaseUrl(),
 });
 
 // Add a request interceptor to attach the token and workspace ID

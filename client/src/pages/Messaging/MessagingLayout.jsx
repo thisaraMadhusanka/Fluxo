@@ -49,16 +49,34 @@ const MessagingLayout = () => {
         loadConversations();
     }, [dispatch]);
 
-    // Set active conversation from URL
+    // Set active conversation from URL (ID or Username)
     useEffect(() => {
-        if (conversationId && conversations.length > 0) {
-            const conversation = conversations.find(c => c._id === conversationId);
-            if (conversation) {
-                dispatch(setActiveConversation(conversation));
-                loadMessages(conversationId);
-            }
+        if (!conversationId || conversations.length === 0) return;
+
+        let conversation;
+        // Check if param is likely an ID (24 hex chars)
+        const isId = /^[0-9a-fA-F]{24}$/.test(conversationId);
+
+        if (isId) {
+            conversation = conversations.find(c => c._id === conversationId);
+        } else {
+            // Treat as username - find conversation with this participant
+            // Note: This matches roughly; ideal would be exact username match from backend
+            const username = conversationId.toLowerCase();
+            conversation = conversations.find(c =>
+                c.participants.some(p => (p.name || '').toLowerCase() === username || (p.username || '').toLowerCase() === username)
+            );
         }
-    }, [conversationId, conversations, dispatch]);
+
+        if (conversation) {
+            dispatch(setActiveConversation(conversation));
+            loadMessages(conversation._id);
+        } else if (!isId && !loading) {
+            // Username not found in loaded conversations - could trigger a search/create here
+            // For now, we just stay on empty state
+            console.log(`Conversation with user '${conversationId}' not found in list.`);
+        }
+    }, [conversationId, conversations, dispatch, loading]);
 
 
     // Load messages for active conversation
