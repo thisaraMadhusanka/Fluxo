@@ -55,6 +55,13 @@ class ChatService {
     subscribeToMessages(conversationId) {
         if (!db || this.activeListeners[conversationId]) return;
 
+        // Validation: Ensure conversationId is safe for Firebase paths
+        // Must be non-empty string, no spaces or special chars
+        if (!conversationId || /[^a-zA-Z0-9_-]/.test(conversationId)) {
+            console.warn(`⚠️ Invalid conversation ID for Firebase: "${conversationId}". Skipping subscription.`);
+            return;
+        }
+
         console.log(`🔌 Subscribing to Firebase chat: ${conversationId}`);
         const messagesRef = ref(db, `messages/${conversationId}`);
 
