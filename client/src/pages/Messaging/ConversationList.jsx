@@ -173,7 +173,11 @@ const ConversationList = ({ onCreateClick }) => {
                                         // Use username for direct messages if available, otherwise ID
                                         if (conv.type === 'direct') {
                                             const otherUser = conv.participants.find(p => (p.user?._id || p.user)?.toString() !== currentUserId?.toString())?.user;
-                                            const identifier = otherUser?.username || otherUser?.name || conv._id;
+                                            let identifier = otherUser?.username || otherUser?.name || conv._id;
+                                            // Slugify: lowercase and replace spaces with hyphens
+                                            if (typeof identifier === 'string' && identifier !== conv._id) {
+                                                identifier = identifier.toLowerCase().replace(/\s+/g, '-');
+                                            }
                                             navigate(`/messages/${identifier}`);
                                         } else {
                                             navigate(`/messages/${conv._id}`);

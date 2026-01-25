@@ -20,18 +20,18 @@ const MessagingLayout = () => {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
 
-    // Handle Firebase subscription
+    // Handle Firebase subscription (Only when we have a valid resolved ID)
     useEffect(() => {
-        if (conversationId) {
-            chatService.subscribeToMessages(conversationId);
+        if (activeConversation?._id) {
+            chatService.subscribeToMessages(activeConversation._id);
         }
 
         return () => {
-            if (conversationId) {
-                chatService.unsubscribeFromMessages(conversationId);
+            if (activeConversation?._id) {
+                chatService.unsubscribeFromMessages(activeConversation._id);
             }
         };
-    }, [conversationId]);
+    }, [activeConversation?._id]);
 
     // Load conversations
     useEffect(() => {
@@ -60,23 +60,30 @@ const MessagingLayout = () => {
         if (isId) {
             conversation = conversations.find(c => c._id === conversationId);
         } else {
-            // Treat as username - find conversation with this participant
-            // Note: This matches roughly; ideal would be exact username match from backend
-            const username = conversationId.toLowerCase();
-            conversation = conversations.find(c =>
-                c.participants.some(p => (p.name || '').toLowerCase() === username || (p.username || '').toLowerCase() === username)
-            );
+            // Treat as username - normalizes spaces and hyphens
+            // URL might be "john-doe", real name "John Doe"
+            const normalizedParam = conversationId.toLowerCase().replace(/-/g, ' ');
+
+            conversation = conversations.find(c => {
+                // Check participants (excluding self ideally, but checking all is safe enough for lookup)
+                return c.participants.some(p => {
+                    const name = (p.name || '').toLowerCase();
+                    const username = (p.username || '').toLowerCase();
+                    return name === normalizedParam || username === normalizedParam;
+                });
+            });
         }
 
         if (conversation) {
             dispatch(setActiveConversation(conversation));
-            loadMessages(conversation._id);
+            // Only load messages if not already loaded or stale
+            if (!messages[conversation._id]) {
+                loadMessages(conversation._id);
+            }
         } else if (!isId && !loading) {
-            // Username not found in loaded conversations - could trigger a search/create here
-            // For now, we just stay on empty state
-            console.log(`Conversation with user '${conversationId}' not found in list.`);
+            console.log(`Conversation with user '${conversationId}' not found.`);
         }
-    }, [conversationId, conversations, dispatch, loading]);
+    }, [conversationId, conversations, dispatch]);
 
 
     // Load messages for active conversation
